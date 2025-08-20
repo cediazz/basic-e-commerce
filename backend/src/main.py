@@ -1,8 +1,13 @@
 from typing import Union
-
 from fastapi import FastAPI
+from .auth.config import create_auth_tables
 
 app = FastAPI(title='E-commerce API')
+
+@app.on_event("startup")
+async def on_startup():
+    await create_auth_tables()
+
 
 
 @app.get("/")
