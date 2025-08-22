@@ -1,6 +1,7 @@
 .env
 
 backend/.venv
+backend/src/db.sqlite3-journal
 
 __pycache__/
 *.py[cod]

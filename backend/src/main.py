@@ -1,15 +1,12 @@
 from typing import Union
 from fastapi import FastAPI
 from .auth.config import create_auth_tables
-from .auth.routes import users_router
+from .auth.routes import users_routers,auth_routers
 
 app = FastAPI(title='E-commerce API')
 
-app.include_router(
-    users_router,
-    prefix="/auth",
-    tags=["auth"],
-)
+app.include_router(users_routers)
+app.include_router(auth_routers)
 
 @app.on_event("startup")
 async def on_startup():
