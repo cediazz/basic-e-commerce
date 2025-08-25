@@ -5,21 +5,13 @@
 Está diseñada para ser fácilmente extensible y personalizable, de modo que pueda 
 integrar su propia lógica.
 """
-import uuid
 from typing import Optional
-
-from fastapi import Depends, Request
+from fastapi import Depends, Request, Response
 from fastapi_users import BaseUserManager, IntegerIDMixin
 from .models import User
 from .config import get_user_db
 from ..config import SECRET
-from typing import Any
-from fastapi_users import exceptions, models, schemas
-from pydantic import BaseModel
-
-class LoginRequest(BaseModel):
-    username: str
-    password: str
+from fastapi_users import exceptions
 
 class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
     reset_password_token_secret = SECRET
@@ -38,9 +30,12 @@ class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
     ):
         print(f"Verification requested for user {user.id}. Verification token: {token}")
     
+    async def on_after_login(self, user: User, request: Request | None = None, response: Response | None = None) -> None:
+        print(f"Authenticated user: {user.fullname}")
+    
     async def authenticate(
-        self, credentials: LoginRequest
-    ) -> Optional[models.UP]:
+        self, credentials: dict
+    ) -> Optional[User]:
         """
         Authenticate and return a user following an email and a password.
 
@@ -49,15 +44,15 @@ class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
         :param credentials: The user credentials.
         """
         try:
-            user = await self.get_by_email(credentials.username)
+            user = await self.get_by_email(credentials["email"])
         except exceptions.UserNotExists:
             # Run the hasher to mitigate timing attack
             # Inspired from Django: https://code.djangoproject.com/ticket/20760
-            self.password_helper.hash(credentials.password)
+            self.password_helper.hash(credentials["password"])
             return None
 
         verified, updated_password_hash = self.password_helper.verify_and_update(
-            credentials.password, user.hashed_password
+            credentials["password"], user.hashed_password
         )
         if not verified:
             return None
