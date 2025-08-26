@@ -9,7 +9,7 @@ from typing import Optional
 from fastapi import Depends, Request, Response
 from fastapi_users import BaseUserManager, IntegerIDMixin
 from .models import User
-from .config import get_user_db
+from ..config import get_user_db
 from ..config import SECRET
 from fastapi_users import exceptions
 

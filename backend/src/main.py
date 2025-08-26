@@ -1,6 +1,6 @@
 from typing import Union
 from fastapi import FastAPI
-from .auth.config import create_auth_tables
+from .config import create_tables
 from .auth.routes import users_routers,auth_routers
 from fastapi.openapi.utils import get_openapi
 
@@ -47,4 +47,4 @@ app.openapi = custom_openapi
 #create tables
 @app.on_event("startup")
 async def on_startup():
-    await create_auth_tables()
+    await create_tables()
