@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, status, Depends, File, UploadFile
+from fastapi import APIRouter, HTTPException, status, Depends, File, UploadFile,Query
 from typing import Annotated
 from fastapi import Form
 from ..schemas.product_schemas import ProductListSchema
@@ -10,6 +10,7 @@ import shutil
 import os
 from ..models import Product
 from ...config import HOST
+from sqlalchemy import select
 
 product_routers = APIRouter(
     prefix="/products",
@@ -68,3 +69,12 @@ async def create_product(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error al crear el producto: {str(e)}"
         )
+        
+@product_routers.get("/", response_model=list[ProductListSchema])
+async def list_product(
+    session: AsyncSession = Depends(get_async_session),
+    offset: int = 0,
+    limit: Annotated[int, Query(le=100)] = 2,
+):
+    products = await session.execute(select(Product).offset(offset).limit(limit))
+    return products.scalars().all()

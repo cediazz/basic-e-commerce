@@ -15,7 +15,7 @@ class Product(Base):
     description: Mapped[str] 
     price: Mapped[float] = mapped_column(index=True)
     is_active: Mapped[bool] = mapped_column(default=True)
-    category: Mapped[str] = mapped_column(unique=True,index=True)
+    category: Mapped[str] = mapped_column(index=True)
     image_url: Mapped[Optional[str]]
     created_at: Mapped[datetime] = mapped_column(default=datetime.now(ZoneInfo("America/Havana")))
 
