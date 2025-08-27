@@ -2,7 +2,6 @@ from fastapi_users import FastAPIUsers
 from .models import User
 from .user_manager import get_user_manager
 from .auth_backend import auth_backend
-from fastapi import APIRouter
 from .schemas import UserCreate, UserRead, UserUpdate
 from fastapi import Depends
 from fastapi_users.authentication import Strategy

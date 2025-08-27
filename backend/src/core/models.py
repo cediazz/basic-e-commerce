@@ -5,6 +5,7 @@ from .enums import OrderStatus,PaymentMethod
 from ..auth.models import Base
 from sqlalchemy import Integer, ForeignKey
 from sqlalchemy.orm import mapped_column,Mapped
+from typing import Optional
 
 class Product(Base):
     __tablename__ = "product"
@@ -15,7 +16,7 @@ class Product(Base):
     price: Mapped[float] = mapped_column(index=True)
     is_active: Mapped[bool] = mapped_column(default=True)
     category: Mapped[str] = mapped_column(unique=True,index=True)
-    image_url: Mapped[str]
+    image_url: Mapped[Optional[str]]
     created_at: Mapped[datetime] = mapped_column(default=datetime.now(ZoneInfo("America/Havana")))
 
 class Order(Base):

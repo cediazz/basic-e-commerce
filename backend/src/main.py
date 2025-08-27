@@ -3,12 +3,19 @@ from fastapi import FastAPI
 from .config import create_tables
 from .auth.routes import users_routers,auth_routers
 from fastapi.openapi.utils import get_openapi
+from fastapi.staticfiles import StaticFiles
+from .config import MEDIA_ROOT
+from .core.routes.product_routes import product_routers
 
 app = FastAPI(title='E-commerce API')
 
 #add routes
 app.include_router(users_routers)
 app.include_router(auth_routers)
+app.include_router(product_routers)
+
+# add static url
+app.mount("/media", StaticFiles(directory=MEDIA_ROOT), name="media")
 
 #custom configuration OpenAPI
 def custom_openapi():
