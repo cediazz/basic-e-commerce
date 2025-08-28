@@ -94,3 +94,80 @@ async def list_product(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error al obtener productos: {str(e)}"
         )
+
+@product_routers.get("/{product_id}", response_model=ProductListSchema, status_code=status.HTTP_200_OK)
+async def get_product(
+    product_id: int,
+    session: AsyncSession = Depends(get_async_session)
+):
+    product = await session.get(Product, product_id)
+    if not product:
+        raise HTTPException(status_code=404, detail="No se encontró un producto para el id solicitado")
+    return product
+
+
+@product_routers.patch("/{product_id}",response_model=ProductListSchema, status_code=status.HTTP_200_OK)
+async def update_product(
+    product_id: int,
+    name: str = Form(...),
+    description: str = Form(...),
+    price: float = Form(..., ge=0),
+    category: str = Form(...),
+    is_active: bool = Form(default=True),
+    image: UploadFile = File(),
+    session: AsyncSession = Depends(get_async_session)
+):
+    product = await session.get(Product, product_id)
+    if not product:
+        raise HTTPException(status_code=404, detail="No se encontró un producto para el id solicitado")
+    
+    # image validation
+    if not image.content_type.startswith("image/"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="El archivo debe ser una imagen válida"
+        )
+    
+    try:
+        #save image
+        file_extension = image.filename.split(".")[-1].lower()
+        filename = f"{uuid4()}.{file_extension}"
+        file_path = PRODUCT_IMAGES_DIR / filename
+        
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(image.file, buffer)
+        
+        image_url = f"{HOST}/media/products/{filename}"
+        
+        # update product
+        product.name = name
+        product.description = description
+        product.price = price
+        product.category = category
+        product.is_active = is_active
+        product.image_url = image_url
+        await session.commit()
+        await session.refresh(product)
+        
+        return product
+    
+    except Exception as e:
+        # Si hay error, eliminar la imagen guardada
+        if 'file_path' in locals() and os.path.exists(file_path):
+            os.remove(file_path)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al actualizar el producto: {str(e)}"
+        )
+
+@product_routers.delete("/{product_id}",status_code=status.HTTP_204_NO_CONTENT)
+async def delete_product(
+    product_id: int,
+    session: AsyncSession = Depends(get_async_session)
+):
+    product = await session.get(Product, product_id)
+    if not product:
+        raise HTTPException(status_code=404, detail="No se encontró un producto para el id solicitado")
+    await session.delete(product)
+    await session.commit()
+    return {"ok": True}
