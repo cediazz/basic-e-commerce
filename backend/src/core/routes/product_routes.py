@@ -11,6 +11,7 @@ from ..models import Product
 from ...config import HOST
 from sqlalchemy import select
 from ..paginator import paginate,PaginatedResponse
+from ...auth.routes import fastapi_users
 
 product_routers = APIRouter(
     prefix="/products",
@@ -70,7 +71,7 @@ async def create_product(
             detail=f"Error al crear el producto: {str(e)}"
         )
         
-@product_routers.get("/", response_model=PaginatedResponse)
+@product_routers.get("/", response_model=PaginatedResponse, status_code=status.HTTP_200_OK)
 async def list_product(
     request: Request,
     session: AsyncSession = Depends(get_async_session),
