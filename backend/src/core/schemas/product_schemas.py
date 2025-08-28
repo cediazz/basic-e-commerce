@@ -1,7 +1,12 @@
 from pydantic import BaseModel
 from datetime import datetime
 
-class ProductListSchema(BaseModel):
+class BaseSchema(BaseModel):
+    class Config:
+        from_attributes = True
+
+
+class ProductListSchema(BaseSchema):
     id: int
     name: str
     description:str

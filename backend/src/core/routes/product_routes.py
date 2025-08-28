@@ -1,5 +1,4 @@
-from fastapi import APIRouter, HTTPException, status, Depends, File, UploadFile,Query
-from typing import Annotated
+from fastapi import APIRouter, HTTPException, status, Depends, File, UploadFile,Query,Request
 from fastapi import Form
 from ..schemas.product_schemas import ProductListSchema
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -11,6 +10,7 @@ import os
 from ..models import Product
 from ...config import HOST
 from sqlalchemy import select
+from ..paginator import paginate,PaginatedResponse
 
 product_routers = APIRouter(
     prefix="/products",
@@ -70,11 +70,26 @@ async def create_product(
             detail=f"Error al crear el producto: {str(e)}"
         )
         
-@product_routers.get("/", response_model=list[ProductListSchema])
+@product_routers.get("/", response_model=PaginatedResponse)
 async def list_product(
+    request: Request,
     session: AsyncSession = Depends(get_async_session),
-    offset: int = 0,
-    limit: Annotated[int, Query(le=100)] = 2,
+    offset: int = Query(0, ge=0, description="Índice inicial desde el que se devolverán los resultados."),
+    limit: int = Query(20, ge=1, le=30, description="Límite de registros por página."),
 ):
-    products = await session.execute(select(Product).offset(offset).limit(limit))
-    return products.scalars().all()
+    try:
+        products_result = await session.execute(
+            select(Product)
+            .order_by(Product.created_at.desc())
+            .offset(offset)
+            .limit(limit)
+        )
+        products = products_result.scalars().all()
+        return await paginate(request,offset,limit,Product,products,session,ProductListSchema)
+        
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al obtener productos: {str(e)}"
+        )
