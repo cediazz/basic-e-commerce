@@ -6,7 +6,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ..auth.models import Base
 from sqlalchemy import select,func
 from typing import Sequence
-from .schemas.product_schemas import BaseSchema
 
 T = TypeVar('T')
 
@@ -27,8 +26,8 @@ async def paginate(
     model: Base,
     results: Sequence[T],
     session: AsyncSession,
-    response_schema: BaseSchema
-) -> PaginatedResponse[BaseSchema]:
+    response_schema: BaseModel
+) -> PaginatedResponse[BaseModel]:
     """Genera los enlaces next y previous al estilo Django"""
     #base_url = str(request.url)
     #print(base_url)

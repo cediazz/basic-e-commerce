@@ -23,7 +23,7 @@ class Order(Base):
     __tablename__ = "order"
     
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    customer_id: Mapped[int] = mapped_column(ForeignKey("user.id"))
+    customer_id: Mapped[int] = mapped_column(ForeignKey("user.id", ondelete="CASCADE"))
     order_date: Mapped[datetime] = mapped_column(default=datetime.now(ZoneInfo("America/Havana")))
     total_amount: Mapped[float]
     status: Mapped[OrderStatus] = mapped_column(SQLAlchemyEnum(OrderStatus),default=OrderStatus.PENDING)
@@ -34,8 +34,8 @@ class OrderItem(Base):
     __tablename__ = "order_item"
     
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
-    order_id: Mapped[int] = mapped_column(ForeignKey("order.id"))
-    product_id: Mapped[int] = mapped_column(ForeignKey("product.id"))
+    order_id: Mapped[int] = mapped_column(ForeignKey("order.id", ondelete="CASCADE"))
+    product_id: Mapped[int] = mapped_column(ForeignKey("product.id",ondelete="CASCADE"))
     quantity: Mapped[int]
     unit_price: Mapped[float] #current price of the product
     subtotal: Mapped[float] # unit_price * quantity

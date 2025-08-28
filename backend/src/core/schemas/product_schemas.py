@@ -1,12 +1,8 @@
 from pydantic import BaseModel
 from datetime import datetime
 
-class BaseSchema(BaseModel):
-    class Config:
-        from_attributes = True
 
-
-class ProductListSchema(BaseSchema):
+class ProductListSchema(BaseModel):
     id: int
     name: str
     description:str
@@ -15,3 +11,5 @@ class ProductListSchema(BaseSchema):
     category: str
     image_url: str
     created_at: datetime
+    class Config:
+        from_attributes = True

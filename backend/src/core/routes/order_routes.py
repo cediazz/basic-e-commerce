@@ -1,0 +1,122 @@
+from fastapi import APIRouter, HTTPException, status, Depends, File, UploadFile,Query,Request
+from fastapi import Form
+from ..schemas.order_schemas import OrderCreateSchema,OrderListSchema
+from sqlalchemy.ext.asyncio import AsyncSession
+from ...config import get_async_session
+from uuid import uuid4
+from ...config import PRODUCT_IMAGES_DIR
+import shutil
+import os
+from ..models import Order
+from ...config import HOST
+from sqlalchemy import select
+from ..paginator import paginate,PaginatedResponse
+from ...auth.routes import fastapi_users
+from typing import Annotated
+from ...auth.models import User
+
+order_routers = APIRouter(
+    prefix="/orders",
+    tags=["order"],
+)
+
+@order_routers.post("/",response_model=OrderListSchema, status_code=status.HTTP_201_CREATED)
+async def create_order(
+    order_data: Annotated[OrderCreateSchema, Form()],
+    session: AsyncSession = Depends(get_async_session)
+):
+    customer_result = await session.execute(
+        select(User).where(User.id == order_data.customer_id)
+    )
+    customer = customer_result.scalar_one_or_none()
+    
+    if not customer:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"No se encontró al usuario con id {order_data.customer_id}"
+        )
+    
+    data_as_dict = order_data.model_dump(exclude_unset=True)
+    order = Order(**data_as_dict)
+    session.add(order)
+    await session.commit()
+    await session.refresh(order)
+    return order
+        
+
+@order_routers.get("/", response_model=PaginatedResponse, status_code=status.HTTP_200_OK)
+async def list_order(
+    request: Request,
+    session: AsyncSession = Depends(get_async_session),
+    offset: int = Query(0, ge=0, description="Índice inicial desde el que se devolverán los resultados."),
+    limit: int = Query(20, ge=1, le=30, description="Límite de registros por página."),
+):
+    try:
+        orders_result = await session.execute(
+            select(Order)
+            .order_by(Order.order_date.desc())
+            .offset(offset)
+            .limit(limit)
+        )
+        orders = orders_result.scalars().all()
+        return await paginate(request,offset,limit,Order,orders,session,OrderListSchema)
+        
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al obtener productos: {str(e)}"
+        )
+
+@order_routers.get("/{order_id}", response_model=OrderListSchema, status_code=status.HTTP_200_OK)
+async def get_order(
+    order_id: int,
+    session: AsyncSession = Depends(get_async_session)
+):
+    order = await session.get(Order, order_id)
+    if not order:
+        raise HTTPException(status_code=404, detail="No se encontró la orden para el id solicitado")
+    return order
+
+
+@order_routers.patch("/{order_id}",response_model=OrderListSchema, status_code=status.HTTP_200_OK)
+async def update_order(
+    order_id: int,
+    order_data: Annotated[OrderCreateSchema, Form()],
+    session: AsyncSession = Depends(get_async_session)
+):
+    order = await session.get(Order, order_id)
+    if not order:
+        raise HTTPException(status_code=404, detail="No se encontró la orden para el id solicitado")
+    
+    customer_result = await session.execute(
+        select(User).where(User.id == order_data.customer_id)
+    )
+    customer = customer_result.scalar_one_or_none()
+    
+    if not customer:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail=f"No se encontró al usuario con id {order_data.customer_id}"
+        )
+    
+    order.customer_id = order_data.customer_id
+    order.total_amount = order_data.total_amount
+    order.status = order_data.status
+    order.payment_method = order_data.payment_method
+    order.shipping_address = order_data.shipping_address
+    await session.commit()
+    await session.refresh(order)
+    return order
+
+@order_routers.delete("/{order_id}",status_code=status.HTTP_204_NO_CONTENT)
+async def delete_order(
+    order_id: int,
+    session: AsyncSession = Depends(get_async_session)
+):
+    order = await session.get(Order, order_id)
+    if not order:
+        raise HTTPException(status_code=404, detail="No se encontró la orden para el id solicitado")
+    await session.delete(order)
+    await session.commit()
+    return {"ok": True}
