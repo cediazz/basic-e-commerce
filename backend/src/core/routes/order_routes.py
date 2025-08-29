@@ -1,19 +1,15 @@
-from fastapi import APIRouter, HTTPException, status, Depends, File, UploadFile,Query,Request
+from fastapi import APIRouter, HTTPException, status, Depends,Query,Request
 from fastapi import Form
 from ..schemas.order_schemas import OrderCreateSchema,OrderListSchema
 from sqlalchemy.ext.asyncio import AsyncSession
 from ...config import get_async_session
-from uuid import uuid4
-from ...config import PRODUCT_IMAGES_DIR
-import shutil
-import os
 from ..models import Order
 from ...config import HOST
 from sqlalchemy import select
 from ..paginator import paginate,PaginatedResponse
-from ...auth.routes import fastapi_users
 from typing import Annotated
 from ...auth.models import User
+from ..services.order_services import OrderService
 
 order_routers = APIRouter(
     prefix="/orders",
@@ -22,26 +18,10 @@ order_routers = APIRouter(
 
 @order_routers.post("/",response_model=OrderListSchema, status_code=status.HTTP_201_CREATED)
 async def create_order(
-    order_data: Annotated[OrderCreateSchema, Form()],
+    order_data: OrderCreateSchema,
     session: AsyncSession = Depends(get_async_session)
 ):
-    customer_result = await session.execute(
-        select(User).where(User.id == order_data.customer_id)
-    )
-    customer = customer_result.scalar_one_or_none()
-    
-    if not customer:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"No se encontró al usuario con id {order_data.customer_id}"
-        )
-    
-    data_as_dict = order_data.model_dump(exclude_unset=True)
-    order = Order(**data_as_dict)
-    session.add(order)
-    await session.commit()
-    await session.refresh(order)
-    return order
+    return await OrderService().create_order(order_data,session)
         
 
 @order_routers.get("/", response_model=PaginatedResponse, status_code=status.HTTP_200_OK)
