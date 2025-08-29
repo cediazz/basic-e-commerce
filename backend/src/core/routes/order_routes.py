@@ -31,22 +31,7 @@ async def list_order(
     offset: int = Query(0, ge=0, description="Índice inicial desde el que se devolverán los resultados."),
     limit: int = Query(20, ge=1, le=30, description="Límite de registros por página."),
 ):
-    try:
-        orders_result = await session.execute(
-            select(Order)
-            .order_by(Order.order_date.desc())
-            .offset(offset)
-            .limit(limit)
-        )
-        orders = orders_result.scalars().all()
-        return await paginate(request,offset,limit,Order,orders,session,OrderListSchema)
-        
-        
-    except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Error al obtener productos: {str(e)}"
-        )
+    return await OrderService().list_order(request,session,offset,limit)
 
 @order_routers.get("/{order_id}", response_model=OrderListSchema, status_code=status.HTTP_200_OK)
 async def get_order(

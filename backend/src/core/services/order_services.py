@@ -2,6 +2,10 @@ from ..schemas.order_schemas import OrderCreateSchema,OrderListSchema
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..dependencies import get_user_by_id,get_product_by_id
 from ..models import Order,OrderItem
+from fastapi import Request,HTTPException,status
+from sqlalchemy import select
+from ..paginator import paginate
+from sqlalchemy.orm import selectinload
 
 class OrderService:
     
@@ -31,3 +35,24 @@ class OrderService:
         await session.commit()
         await session.refresh(order, ['items'])
         return order
+    
+    async def list_order(self,request: Request,session: AsyncSession,offset: int,limit: int ):
+        try:
+            orders_result = await session.execute(
+            select(Order)
+            .options(
+                selectinload(Order.items).selectinload(OrderItem.product)
+            )
+            .order_by(Order.order_date.desc())
+            .offset(offset)
+            .limit(limit)
+            
+        )
+            orders = orders_result.scalars().all()
+            return await paginate(request,offset,limit,Order,orders,session,OrderListSchema)
+        
+        except Exception as e:
+            raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al obtener productos: {str(e)}"
+        )

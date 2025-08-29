@@ -4,18 +4,22 @@ from ..enums import OrderStatus,PaymentMethod
 from typing import List
 from decimal import Decimal
 from pydantic import Field
-
+from.product_schemas import ProductListSchema
 
 class OrderItemCreateSchema(BaseModel):
     product_id: int 
     quantity: int
     unit_price:Decimal = Field(ge=0, max_digits=10, decimal_places=2)
 
-class OrderItemListSchema(OrderItemCreateSchema):
-    subtotal:Decimal = Field(ge=0, max_digits=12, decimal_places=2)
+class OrderItemListSchema(BaseModel):
     id: int
-    product_id: int
+    quantity: int
+    unit_price:Decimal = Field(ge=0, max_digits=10, decimal_places=2)
+    subtotal:Decimal = Field(ge=0, max_digits=12, decimal_places=2)
     created_at: datetime
+    product: ProductListSchema
+    class Config:
+        from_attributes = True
 
 class OrderCreateSchema(BaseModel):
     customer_id: int

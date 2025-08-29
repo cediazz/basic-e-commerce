@@ -49,6 +49,7 @@ class OrderItem(Base):
     subtotal: Mapped[Decimal] = mapped_column(Numeric(12, 2))
     created_at: Mapped[datetime] = mapped_column(default=datetime.now(ZoneInfo("America/Havana")))
     order: Mapped["Order"] = relationship(back_populates="items")
+    product: Mapped["Product"] = relationship("Product")
     
     def calculate_subtotal(self):
         self.subtotal = round(self.unit_price * self.quantity, 2)
