@@ -38,10 +38,7 @@ async def get_order(
     order_id: int,
     session: AsyncSession = Depends(get_async_session)
 ):
-    order = await session.get(Order, order_id)
-    if not order:
-        raise HTTPException(status_code=404, detail="No se encontró la orden para el id solicitado")
-    return order
+    return await OrderService().get_order(order_id,session)
 
 
 @order_routers.patch("/{order_id}",response_model=OrderListSchema, status_code=status.HTTP_200_OK)
