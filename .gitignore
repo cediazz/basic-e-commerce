@@ -6,3 +6,7 @@ backend/src/db.sqlite3-journal
 __pycache__/
 *.py[cod]
 *$py.class
+
+frontend/node_modules
+frontend/.next
+frontend/.env
