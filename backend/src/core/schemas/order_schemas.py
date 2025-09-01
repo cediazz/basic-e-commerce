@@ -35,3 +35,10 @@ class OrderListSchema(OrderCreateSchema):
     items: List[OrderItemListSchema]
     class Config:
         from_attributes = True
+
+class OrderUpdateSchema(BaseModel):
+    customer_id: int
+    total_amount:Decimal = Field(ge=0, max_digits=12, decimal_places=2)
+    status: OrderStatus
+    payment_method: PaymentMethod
+    shipping_address: str

@@ -1,4 +1,4 @@
-from ..schemas.order_schemas import OrderCreateSchema, OrderListSchema
+from ..schemas.order_schemas import OrderCreateSchema, OrderListSchema,OrderUpdateSchema
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..dependencies import get_user_by_id, get_product_by_id
 from ..models import Order, OrderItem
@@ -75,3 +75,25 @@ class OrderService:
             detail="No se encontró la orden para el id solicitado"
             )
         return order
+    
+    async def update_order(self, order_id: int, order_data: OrderUpdateSchema, session: AsyncSession):
+        order = await self.get_order(order_id,session)#session.get(Order, order_id)
+        
+        await get_user_by_id(order_data.customer_id, session)
+        
+        order.customer_id = order_data.customer_id
+        order.total_amount = order_data.total_amount
+        order.status = order_data.status
+        order.payment_method = order_data.payment_method
+        order.shipping_address = order_data.shipping_address
+        await session.commit()
+        await session.refresh(order)
+        return order
+    
+    async def delete_order(self, order_id: int, session: AsyncSession):
+        order = await session.get(Order, order_id)
+        if not order:
+            raise HTTPException(status_code=404, detail="No se encontró la orden para el id solicitado")
+        await session.delete(order)
+        await session.commit()
+        return {"ok": True}

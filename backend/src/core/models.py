@@ -36,7 +36,10 @@ class Order(Base):
     status: Mapped[OrderStatus] = mapped_column(SQLAlchemyEnum(OrderStatus),default=OrderStatus.PENDING)
     payment_method: Mapped[PaymentMethod] = mapped_column(SQLAlchemyEnum(PaymentMethod))
     shipping_address: Mapped[str]
-    items: Mapped[List["OrderItem"]] = relationship(back_populates="order")
+    items: Mapped[List["OrderItem"]] = relationship(
+        back_populates="order", 
+        cascade="all, delete-orphan"
+    )
 
 class OrderItem(Base):
     __tablename__ = "order_item"
