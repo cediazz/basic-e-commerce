@@ -6,6 +6,8 @@ from fastapi.openapi.utils import get_openapi
 from fastapi.staticfiles import StaticFiles
 from .config import MEDIA_ROOT
 from .core.routes.routes import core_routers
+from fastapi.middleware.cors import CORSMiddleware
+from .config import origins
 
 app = FastAPI(title='E-commerce API')
 
@@ -13,6 +15,14 @@ app = FastAPI(title='E-commerce API')
 app.include_router(users_routers)
 app.include_router(auth_routers)
 app.include_router(core_routers)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # add static url
 app.mount("/media", StaticFiles(directory=MEDIA_ROOT), name="media")

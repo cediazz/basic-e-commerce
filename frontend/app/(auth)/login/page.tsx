@@ -19,6 +19,7 @@ import { Loader2Icon } from "lucide-react"
 import { useState } from "react"
 import { useRouter } from 'next/navigation'
 import axios from "axios"
+import MyAlert from "@/components/Alerts/alert"
 
 const FormSchema = z.object({
   email: z.string().email("Email inválido"),
@@ -40,17 +41,20 @@ export default function LoginPage() {
   
   async function onSubmit(data: z.infer<typeof FormSchema>) {
    setLoading(true)
-   axios.post(`${process.env.NEXT_PUBLIC_BACKEND_HOST}/auth/login`,data)
+   let formData = new FormData()
+   formData.append('email',data.email)
+   formData.append('password',data.password)
+   axios.post(`${process.env.NEXT_PUBLIC_BACKEND_HOST}/auth/login`,formData)
   .then(function (response) {
     console.log(response.data)
     if (response.status === 200){
-      localStorage.setItem('userData', response.data)
+      localStorage.setItem('accessToken', response.data.access_token)
       //router.push('/home')
     }
     setLoading(false)
   })
   .catch(function (error) {
-    setError(error)
+    setError(error.response.data.detail)
     setLoading(false)
   });
   }
@@ -97,6 +101,7 @@ export default function LoginPage() {
             </form>
           </Form>
         </CardContent>
+        {error && <MyAlert message={error}/>}
       </Card>
     </div>
   )

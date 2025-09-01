@@ -13,6 +13,13 @@ SECRET = os.environ.get('SECRET_KEY', config('SECRET_KEY'))
 #***host configuration***
 HOST = f"https://{os.environ.get('RENDER_EXTERNAL_HOSTNAME', '')}" if os.environ.get('RENDER_EXTERNAL_HOSTNAME') else 'http://127.0.0.1:8000'
 
+#***CORS***
+origins = [
+    config('FRONTEND_HOST'),
+    "http://127.0.0.1:3000",
+    "http://localhost:3000",
+]
+
 #***Database configurations***
 DATABASE_URL = "sqlite+aiosqlite:///./db.sqlite3"
 
