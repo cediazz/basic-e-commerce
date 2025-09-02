@@ -11,9 +11,11 @@ export default function MyAlert({message}){
     return(
        <Alert variant="destructive">
         <AlertCircleIcon />
-        <AlertTitle>Error</AlertTitle>
+        <AlertTitle>Errores:</AlertTitle>
         <AlertDescription>
-          <p>{message}</p>
+           <ul className="list-inside list-disc text-sm">
+            <li>{message}</li>
+          </ul>
         </AlertDescription>
       </Alert>
     )
