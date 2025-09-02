@@ -50,7 +50,7 @@ export default function LoginPage() {
         console.log(response.data)
         if (response.status === 200) {
           localStorage.setItem('accessToken', response.data.access_token)
-          router.push('/')
+          router.push('/home')
         }
         setLoading(false)
       })
@@ -82,7 +82,7 @@ export default function LoginPage() {
                   <FormItem>
                     <FormLabel>Email</FormLabel>
                     <FormControl>
-                      <Input placeholder="email" {...field} />
+                      <Input  placeholder="email" {...field} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>

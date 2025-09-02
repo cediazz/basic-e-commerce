@@ -1,156 +1,77 @@
-
-import { Calendar, Home, Inbox, Search, Settings, User2, ChevronUp, FileText, ChevronRight } from "lucide-react"
-
+"use client"
+import { ListOrdered, Package, ShoppingCart} from "lucide-react"
+import * as React from "react"
+import { NavMain } from "@/components/nav-main"
+import { NavUser } from "@/components/nav-user"
 import {
   Sidebar,
-  SidebarHeader,
-  SidebarSeparator,
   SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
+  SidebarFooter,
+  SidebarHeader,
+  SidebarRail,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarFooter,
-  SidebarMenuSub,
-  SidebarMenuSubItem,
-  SidebarMenuSubButton
 } from "@/components/ui/sidebar"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible"
-import Link from 'next/link'
 
+const data = {
+  user: {
+    name: "shadcn",
+    email: "m@example.com",
+    avatar: "/avatars/shadcn.jpg",
+  },
+  navMain: [
+    {
+      title: "Productos",
+      url: "#",
+      icon: Package,
+      isActive: true,
+      items: [
+        {
+          title: "Agregar productor",
+          url: "/products",
+        },
+      ],
+    },
+    {
+      title: "Ordenes",
+      url: "#",
+      icon: ListOrdered,
+      items: [
+        {
+          title: "Agregar Orden",
+          url: "*/orders",
+        },
+      ],
+    },
+  ],
+}
 
-// Menu items.
-const items = [
-  {
-    title: "Home",
-    url: "/home",
-    icon: Home,
-  },
-  {
-    title: "Posts",
-    url: "#",
-    icon: Inbox,
-    submenus : [
-      {
-        title: "Get posts",
-        url: "/posts",
-        icon: Inbox,
-      }
-    ] 
-  },
-  {
-    title: "Calendar",
-    url: "#",
-    icon: Calendar,
-  },
-  {
-    title: "Search",
-    url: "#",
-    icon: Search,
-  },
-  {
-    title: "Settings",
-    url: "#",
-    icon: Settings,
-  },
-]
-
-export default function AppSidebar() {
-  
+export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
-    <Sidebar collapsible="icon">
-      <SidebarGroup className="bg-primary text-primary-foreground shadow-xs">
-        <SidebarGroupLabel className="text-primary-foreground">Application</SidebarGroupLabel>
-      </SidebarGroup>
-      <SidebarHeader className="bg-primary text-primary-foreground shadow-xs" />
-      <SidebarSeparator />
-      <SidebarContent className="bg-primary text-primary-foreground shadow-xs">
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {items.map((item) => (
-                item.submenus ?
-                item.submenus.map((submenu) => (
-                  <Collapsible className="group/collapsible">
-                  <SidebarMenuItem key={item.title}>
-                    <CollapsibleTrigger asChild>
-                      <SidebarMenuButton tooltip={item.title}>
-                        {item.icon && <item.icon />}
-                        <span>{item.title}</span>
-                        <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
-                      </SidebarMenuButton>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent>
-                      <SidebarMenuSub>
-                        <SidebarMenuSubItem >
-                          <SidebarMenuSubButton asChild className="bg-primary text-primary-foreground shadow-xs">
-                            <Link href={submenu.url} >
-                            <span><FileText size={17} /></span>
-                            <span>{submenu.title}</span>
-                            </Link>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                        </SidebarMenuSub>
-                    </CollapsibleContent>
-                  </SidebarMenuItem>
-                </Collapsible>
-
-                ) )
-                :
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <Link href={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-      </SidebarContent>
-      <SidebarFooter className="bg-primary text-primary-foreground shadow-xs">
+    <Sidebar collapsible="icon" {...props}>
+      <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <SidebarMenuButton>
-                  <User2 /> Username
-                  <ChevronUp className="ml-auto" />
-                </SidebarMenuButton>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent
-                side="top"
-                className="w-[--radix-popper-anchor-width]"
-              >
-                <DropdownMenuItem>
-                  <span>Account</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <span>Billing</span>
-                </DropdownMenuItem>
-                <DropdownMenuItem>
-                  <span>Sign out</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+            <SidebarMenuButton size="lg">
+              <div className="bg-sidebar-primary text-sidebar-primary-foreground flex aspect-square size-8 items-center justify-center rounded-lg">
+                  <ShoppingCart className="size-4" />
+                </div>
+                <div className="flex flex-col gap-0.5 leading-none">
+                  <span className="font-medium">Ecommerce</span>
+                  <span className="">v1.0.0</span>
+                </div>
+              </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
+      </SidebarHeader>
+      <SidebarContent>
+        <NavMain items={data.navMain} />
+      </SidebarContent>
+      <SidebarFooter>
+        <NavUser user={data.user} />
       </SidebarFooter>
+      <SidebarRail />
     </Sidebar>
   )
 }
