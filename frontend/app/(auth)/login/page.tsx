@@ -21,6 +21,7 @@ import { useRouter } from 'next/navigation'
 import axios from "axios"
 import MyAlert from "@/components/Alerts/alert"
 import Link from 'next/link'
+import { useAuth } from "@/context/userContext"
 
 const FormSchema = z.object({
   email: z.string().email("Email inválido"),
@@ -39,6 +40,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState('')
   const router = useRouter();
+  const { login } = useAuth()
 
   async function onSubmit(data: z.infer<typeof FormSchema>) {
     setLoading(true)
@@ -49,13 +51,14 @@ export default function LoginPage() {
       .then(function (response) {
         console.log(response.data)
         if (response.status === 200) {
-          localStorage.setItem('accessToken', response.data.access_token)
-          router.push('/home')
+          login(response.data.access_token).then(() => {
+            router.push('/home')
+          })
         }
         setLoading(false)
       })
       .catch(function (error) {
-        setError(error.response.data.detail)
+        setError(error.response?.data?.detail || 'Error de autenticación')
         setLoading(false)
       });
   }
