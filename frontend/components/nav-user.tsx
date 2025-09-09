@@ -4,16 +4,8 @@ import {
   BadgeCheck,
   Bell,
   ChevronsUpDown,
-  CreditCard,
   LogOut,
-  Sparkles,
 } from "lucide-react"
-
-import {
-  Avatar,
-  AvatarFallback,
-  AvatarImage,
-} from "@/components/ui/avatar"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -30,14 +22,12 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar"
 import { User } from "@/context/userContext"
+import { useAuth } from "@/context/userContext"
 
-interface NavUserProps {
-  user: User
-}
-
-export function NavUser({ user }: NavUserProps ) {
+export function NavUser( { user }: { user: User | null } ) {
   
   const { isMobile } = useSidebar()
+  const { logout } = useAuth()
 
   return (
     <SidebarMenu>
@@ -50,8 +40,8 @@ export function NavUser({ user }: NavUserProps ) {
             >
              
               <div className="grid flex-1 text-left text-sm leading-tight">
-                <span className="truncate font-medium">Nombre de usuario: {user.username}</span>
-                <span className="truncate text-xs">{user.email}</span>
+                <span className="truncate font-medium">Nombre de usuario: {user?.username}</span>
+                <span className="truncate text-xs">{user?.email}</span>
               </div>
               <ChevronsUpDown className="ml-auto size-4" />
             </SidebarMenuButton>
@@ -65,8 +55,8 @@ export function NavUser({ user }: NavUserProps ) {
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <div className="grid flex-1 text-left text-sm leading-tight">
-                  <span className="truncate font-medium">{user.fullname}</span>
-                  <span className="truncate text-xs">{user.email}</span>
+                  <span className="truncate font-medium">{user?.fullname}</span>
+                  <span className="truncate text-xs">{user?.email}</span>
                 </div>
               </div>
             </DropdownMenuLabel>
@@ -82,7 +72,7 @@ export function NavUser({ user }: NavUserProps ) {
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
-            <DropdownMenuItem>
+            <DropdownMenuItem onClick={() => logout()}>
               <LogOut />
               Salir
             </DropdownMenuItem>

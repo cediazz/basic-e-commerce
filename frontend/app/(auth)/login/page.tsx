@@ -39,7 +39,7 @@ export default function LoginPage() {
   })
   const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState('')
-  const router = useRouter();
+  const router = useRouter()
   const { login } = useAuth()
 
   async function onSubmit(data: z.infer<typeof FormSchema>) {
@@ -49,10 +49,9 @@ export default function LoginPage() {
     formData.append('password', data.password)
     axios.post(`${process.env.NEXT_PUBLIC_BACKEND_HOST}/auth/login`, formData)
       .then(function (response) {
-        console.log(response.data)
         if (response.status === 200) {
-          login(response.data.access_token).then(() => {
-            router.push('/home')
+          login(response.data).then(() => {
+            router.push('/products')
           })
         }
         setLoading(false)
