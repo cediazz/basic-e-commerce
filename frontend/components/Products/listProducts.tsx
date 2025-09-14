@@ -21,12 +21,14 @@ export default function Products({ data }: ProductsProps) {
   return (
     <div className="grid grid-cols-1  lg:grid-cols-3 xl:grid-cols-4 gap-6">
       {data.results.map((product:any) => (
+        <div>
         <ProductCard
           key={product.id}
           product={product}
           onAddToCart={handleAddToCart}
           onQuickView={handleQuickView}
         />
+        </div>
       ))}
     </div>
   )

@@ -36,43 +36,22 @@ export function ProductCard({
 
     return (
         <Card className="w-full max-w-sm overflow-hidden hover:shadow-lg transition-all duration-300 group">
-            {/* Header con imagen */}
             <CardHeader className="p-0 relative">
-                <div className="relative aspect-square overflow-hidden">
+                <div className="relative overflow-hidden">
                     {imageError ? (
                         <div className="w-full h-full bg-gray-200 flex items-center justify-center">
                             <span className="text-gray-500">Imagen no disponible</span>
                         </div>
                     ) : (
+                        <a href={product.image_url}>
                         <img
                             src={product.image_url}
                             alt={product.name}
-                            //fill
                             className="object-cover group-hover:scale-105 transition-transform duration-300"
                             onError={() => setImageError(true)}
                         />
+                        </a>
                     )}
-
-                    {/* Badges superpuestos */}
-                    <div className="absolute top-3 left-3 space-y-2">
-                        {product.category && (
-                            <Badge variant="outline" className="text-xs bg-white/90">
-                                {product.category}
-                            </Badge>
-                        )}
-                    </div>
-
-                    {/* Acciones rápidas */}
-                    <div className="absolute top-3 right-3 space-y-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                        <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-8 w-8 rounded-full bg-white/90 backdrop-blur-sm"
-                            onClick={() => onQuickView?.(product)}
-                        >
-                            <Eye className="h-4 w-4" />
-                        </Button>
-                    </div>
                 </div>
             </CardHeader>
 
