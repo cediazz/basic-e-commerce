@@ -17,11 +17,11 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardAction } from "@/components/ui/card"
 import { Loader2Icon } from "lucide-react"
 import { useState } from "react"
-import { useRouter } from 'next/navigation'
 import axios from "axios"
 import MyAlert from "@/components/Alerts/alert"
 import Link from 'next/link'
 import { useAuth } from "@/context/userContext"
+import { redirect } from 'next/navigation'
 
 const FormSchema = z.object({
   email: z.string().email("Email inválido"),
@@ -39,7 +39,6 @@ export default function LoginPage() {
   })
   const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState('')
-  const router = useRouter()
   const { login } = useAuth()
 
   async function onSubmit(data: z.infer<typeof FormSchema>) {
@@ -51,7 +50,7 @@ export default function LoginPage() {
       .then(function (response) {
         if (response.status === 200) {
           login(response.data).then(() => {
-            router.push('/products')
+            redirect('/products')
           })
         }
         setLoading(false)
