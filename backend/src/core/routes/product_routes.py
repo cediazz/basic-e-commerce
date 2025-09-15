@@ -9,9 +9,9 @@ import shutil
 import os
 from ..models import Product
 from ...config import HOST
-from sqlalchemy import select
+from sqlalchemy import select,func
 from ..paginator import paginate,PaginatedResponse
-from ...auth.routes import fastapi_users
+from typing import Optional
 
 product_routers = APIRouter(
     prefix="/products",
@@ -75,25 +75,47 @@ async def create_product(
 async def list_product(
     request: Request,
     session: AsyncSession = Depends(get_async_session),
+    category: Optional[str] = Query(None, description="Filtrar productos por categoría"),
     offset: int = Query(0, ge=0, description="Índice inicial desde el que se devolverán los resultados."),
     limit: int = Query(20, ge=1, le=30, description="Límite de registros por página."),
 ):
     try:
-        products_result = await session.execute(
-            select(Product)
-            .order_by(Product.created_at.desc())
-            .offset(offset)
-            .limit(limit)
-        )
-        products = products_result.scalars().all()
-        return await paginate(request,offset,limit,Product,products,session,ProductListSchema)
+        query = select(Product).order_by(Product.created_at.desc())
         
+        if category:
+            query = query.where(Product.category == category)
+        
+        base_query = query
+        
+        query = query.offset(offset).limit(limit)
+        
+        products_result = await session.execute(query)
+        products = products_result.scalars().all()
+        return await paginate(request,offset,limit,Product,base_query,products,session,ProductListSchema)
         
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error al obtener productos: {str(e)}"
         )
+
+@product_routers.get("/categorys", response_model=list[str], status_code=status.HTTP_200_OK)
+async def get_categorys(
+    session: AsyncSession = Depends(get_async_session)
+):
+    try:
+        # Consulta para obtener categorías únicas
+        query = select(Product.category).distinct().order_by(func.lower(Product.category))
+        results = await session.execute(query)
+        categories = results.scalars().all()
+        return categories
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error al obtener categorías: {str(e)}"
+        )
+
 
 @product_routers.get("/{product_id}", response_model=ProductListSchema, status_code=status.HTTP_200_OK)
 async def get_product(

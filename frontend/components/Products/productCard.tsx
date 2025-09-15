@@ -2,11 +2,9 @@
 "use client"
 
 import { useState } from 'react'
-import Image from 'next/image'
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Badge } from '@/components/ui/badge'
-import { Heart, ShoppingCart, Star, Eye } from 'lucide-react'
+import { ShoppingCart } from 'lucide-react'
 
 export interface Product {
     id: number
@@ -23,13 +21,11 @@ export interface Product {
 interface ProductCardProps {
     product: Product
     onAddToCart?: (product: Product) => void
-    onQuickView?: (product: Product) => void
 }
 
 export function ProductCard({
     product,
     onAddToCart,
-    onQuickView,
 }: ProductCardProps) {
 
     const [imageError, setImageError] = useState(false)
@@ -61,11 +57,6 @@ export function ProductCard({
                 <h3 className="font-semibold text-lg line-clamp-1 group-hover:text-blue-600 transition-colors">
                     {product.name}
                 </h3>
-
-                {/* Descripción */}
-                <p className="text-sm text-gray-600 line-clamp-2 min-h-[2.5rem]">
-                    {product.description}
-                </p>
 
                 {/* Precio */}
                 <div className="flex items-center gap-2">

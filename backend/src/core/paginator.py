@@ -24,6 +24,7 @@ async def paginate(
     offset: int,
     limit: int,
     model: Base,
+    query,
     results: Sequence[T],
     session: AsyncSession,
     response_schema: BaseModel
@@ -32,7 +33,8 @@ async def paginate(
     #base_url = str(request.url)
     #print(base_url)
     #Obtener el conteo total
-    total_count_result = await session.execute(select(func.count(model.id)))
+    count_query = query.with_only_columns(func.count(), maintain_column_froms=True)
+    total_count_result = await session.execute(count_query)
     total_count = total_count_result.scalar()
     
     # Determinar si hay página siguiente

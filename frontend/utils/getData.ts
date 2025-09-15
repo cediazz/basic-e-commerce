@@ -1,7 +1,8 @@
+'use server'
+
 import { cookies } from 'next/headers'
 
 export async function getData(url:string){
-    
     const cookieStore = await cookies()
     const accessToken = cookieStore.get('accessToken')?.value
         let res = await fetch(
