@@ -11,7 +11,6 @@ import { Button } from "@/components/ui/button"
 import {
     Form,
     FormControl,
-    FormDescription,
     FormField,
     FormItem,
     FormLabel,
@@ -25,6 +24,7 @@ import {
     SelectValue,
 } from "@/components/ui/select"
 import { Dispatch } from "react";
+import { Search } from "lucide-react";
 
 const FormSchema = z.object({
     category: z
@@ -34,23 +34,31 @@ const FormSchema = z.object({
 })
 
 interface CategoryProps{
-    setProducts: Dispatch<any>
+    setProducts: Dispatch<any>,
+    setLoading: Dispatch<boolean>
 }
 
-export default function Categorys({setProducts}: CategoryProps) {
+export default function Categorys({setProducts, setLoading}: CategoryProps) {
     
     const [categorys, setCategorys] = useState<[] | null>()
+    const [isLoadingCategories, setIsLoadingCategories] = useState(true)
     const router = useRouter()
     const form = useForm<z.infer<typeof FormSchema>>({
         resolver: zodResolver(FormSchema),
     })
 
     const getProductsByCategory = async (category: string) => {
-        const data = await getData(`/products/?category=${category}&offset=0&limit=20`)
+        setLoading(true)
+        let url: string | null = null
+        if (category === "all")
+            url = "/products/?offset=0&limit=20"
+        else url = `/products/?category=${category}&offset=0&limit=20`
+        const data = await getData(url)
         if (data === 401) {
           router.push('/login')
         }
         else setProducts(data.results)
+        setLoading(false)
       }
     
     function onSubmit(data: z.infer<typeof FormSchema>) {
@@ -64,6 +72,7 @@ export default function Categorys({setProducts}: CategoryProps) {
             router.push('/login')
         }
         else setCategorys(data)
+        setIsLoadingCategories(false)
     }
 
     useEffect(() => {
@@ -76,21 +85,26 @@ export default function Categorys({setProducts}: CategoryProps) {
     return (
         <Suspense fallback={<div>Loading...</div>}>
             <Form {...form}>
-                <form onSubmit={form.handleSubmit(onSubmit)} className="w-2/3 space-y-6">
-                    <div className="grid grid-cols-1  lg:grid-cols-1 xl:grid-cols-2 gap-4">
+                <form onSubmit={form.handleSubmit(onSubmit)} className="">
+                    <div className="grid grid-cols-1  lg:grid-cols-1 xl:grid-cols-3 gap-8">
                     <FormField
                         control={form.control}
                         name="category"
                         render={({ field }) => (
                             <FormItem>
-                                <FormLabel>Seleccione la Categoria</FormLabel>
+                                <FormLabel>Buscar por Categoria</FormLabel>
                                 <Select onValueChange={field.onChange} defaultValue={field.value}>
                                     <FormControl>
                                         <SelectTrigger>
-                                            <SelectValue placeholder="Seleccione una categoría" />
+                                             {isLoadingCategories ? (
+                                                <SelectValue placeholder="Cargando categorías..." />
+                                            ) : (
+                                                <SelectValue placeholder="Seleccione una categoría" />
+                                            )}
                                         </SelectTrigger>
                                     </FormControl>
                                     <SelectContent>
+                                        <SelectItem value="all">Todas las categorías</SelectItem>
                                         {categorys && categorys.map(category => (
                                             <SelectItem key={category} value={category}>{category}</SelectItem>
                                         ))}
@@ -100,7 +114,7 @@ export default function Categorys({setProducts}: CategoryProps) {
                             </FormItem>
                         )}
                     />
-                    <Button className="mt-5" type="submit">Submit</Button>
+                    <Button className="mt-5" type="submit" disabled={isLoadingCategories}><Search /> Buscar</Button>
                     </div>
                 </form>
             </Form>

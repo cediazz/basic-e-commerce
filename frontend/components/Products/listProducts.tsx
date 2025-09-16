@@ -2,10 +2,9 @@
 import { ProductCard } from "./productCard"
 import { Product } from "./productCard"
 import { useState } from "react"
-import { getData } from "@/utils/getData"
 import { useRouter } from 'next/navigation'
 import Categorys from "./Categorys"
-import { dir } from "node:console"
+import LoadingProducts from "@/app/(protected)/products/loading"
 
 interface ProductsProps {
   data: any
@@ -14,6 +13,7 @@ interface ProductsProps {
 export default function Products({ data }: ProductsProps) {
 
   const [products, setProducts] = useState(data.results)
+  const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
 
   const handleAddToCart = (product: Product) => {
@@ -23,7 +23,8 @@ export default function Products({ data }: ProductsProps) {
 
   return (
     <div>
-     <Categorys setProducts={setProducts}/>
+     <Categorys setProducts={setProducts} setLoading={setIsLoading}/>
+    { isLoading ? <LoadingProducts /> :
     <div className="grid grid-cols-1  lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-8">
       {products && products.map((product:any) => (
         <ProductCard
@@ -31,9 +32,8 @@ export default function Products({ data }: ProductsProps) {
           product={product}
           onAddToCart={handleAddToCart}
         />
-        
       ))}
-    </div>
+    </div>}
     </div>
   )
 }
