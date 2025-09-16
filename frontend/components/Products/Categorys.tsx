@@ -34,11 +34,13 @@ const FormSchema = z.object({
 })
 
 interface CategoryProps{
-    setProducts: Dispatch<any>,
-    setLoading: Dispatch<boolean>
+    setProductsData: Dispatch<any>,
+    setLoading: Dispatch<boolean>,
+    offset: string,
+    limit:string
 }
 
-export default function Categorys({setProducts, setLoading}: CategoryProps) {
+export default function Categorys({setProductsData, setLoading, offset, limit}: CategoryProps) {
     
     const [categorys, setCategorys] = useState<[] | null>()
     const [isLoadingCategories, setIsLoadingCategories] = useState(true)
@@ -51,13 +53,13 @@ export default function Categorys({setProducts, setLoading}: CategoryProps) {
         setLoading(true)
         let url: string | null = null
         if (category === "all")
-            url = "/products/?offset=0&limit=20"
-        else url = `/products/?category=${category}&offset=0&limit=20`
+            url = `/products/?offset=${offset}&limit=${limit}`
+        else url = `/products/?category=${category}&offset=${offset}&limit=${limit}`
         const data = await getData(url)
         if (data === 401) {
           router.push('/login')
         }
-        else setProducts(data.results)
+        else setProductsData(data)
         setLoading(false)
       }
     
