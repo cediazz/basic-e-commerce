@@ -34,13 +34,11 @@ const FormSchema = z.object({
 })
 
 interface CategoryProps{
-    setProductsData: Dispatch<any>,
-    setLoading: Dispatch<boolean>,
-    offset: string,
-    limit:string
+    setCategory: Dispatch<string>,
+    getProductsByCategory: (category: string) => void
 }
 
-export default function Categorys({setProductsData, setLoading, offset, limit}: CategoryProps) {
+export default function Categorys({setCategory,getProductsByCategory}: CategoryProps) {
     
     const [categorys, setCategorys] = useState<[] | null>()
     const [isLoadingCategories, setIsLoadingCategories] = useState(true)
@@ -49,21 +47,10 @@ export default function Categorys({setProductsData, setLoading, offset, limit}: 
         resolver: zodResolver(FormSchema),
     })
 
-    const getProductsByCategory = async (category: string) => {
-        setLoading(true)
-        let url: string | null = null
-        if (category === "all")
-            url = `/products/?offset=${offset}&limit=${limit}`
-        else url = `/products/?category=${category}&offset=${offset}&limit=${limit}`
-        const data = await getData(url)
-        if (data === 401) {
-          router.push('/login')
-        }
-        else setProductsData(data)
-        setLoading(false)
-      }
+    
     
     function onSubmit(data: z.infer<typeof FormSchema>) {
+       setCategory(data.category)
        getProductsByCategory(data.category)
     }
 
