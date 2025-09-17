@@ -3,11 +3,9 @@ import { ProductCard } from "./productCard"
 import { Product } from "./productCard"
 import { useState } from "react"
 import { useRouter } from 'next/navigation'
-import Categorys from "./Categorys"
+import FiltersForm from "./filtersForm"
 import LoadingProducts from "@/app/(protected)/products/loading"
 import { MyPagination } from "../Pagination/Pagination"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { getData } from "@/utils/getData"
 
 interface ProductsProps {
@@ -18,9 +16,6 @@ export default function Products({ data }: ProductsProps) {
 
   const [productsData, setProductsData] = useState<any>(data)
   const [isLoading, setIsLoading] = useState(false)
-  const [category, setCategory] = useState<string | null>()
-  const [offset, setOffset] = useState<string>('0')
-  const [limit, setLimit] = useState<string>('20')
   const router = useRouter()
 
   const handleAddToCart = (product: Product) => {
@@ -28,7 +23,7 @@ export default function Products({ data }: ProductsProps) {
     // Aquí iría la lógica para agregar al carrito
   }
 
-  const getProductsByCategory = async (category: string) => {
+  const getProductsByCategory = async (category: string,limit:string,offset:string) => {
           setIsLoading(true)
           let url: string | null = null
           if (category === "all")
@@ -44,9 +39,8 @@ export default function Products({ data }: ProductsProps) {
 
   return (
     <div>
-      <Categorys
+      <FiltersForm
         getProductsByCategory={getProductsByCategory}
-        setCategory={setCategory}
       />
       {isLoading ? <LoadingProducts /> :
         <>
@@ -57,16 +51,6 @@ export default function Products({ data }: ProductsProps) {
               </h2>
             </div>
 
-          </div>
-          <div className="grid grid-cols-1  lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-3">
-            <div className="grid w-full max-w-sm items-center gap-3">
-              <Label htmlFor="cantPerPage">Límite de productos por página</Label>
-              <Input id="cantPerPage" defaultValue={limit} type="number" min={0} max={20} onChange={e => setLimit(e.target.value)} />
-            </div>
-            <div className="grid w-full max-w-sm items-center gap-3">
-              <Label htmlFor="start">Producto inicial</Label>
-              <Input id="start" defaultValue={offset} type="number" min={0} max={productsData.count} onChange={e => setOffset(e.target.value)} />
-            </div>
           </div>
           <div className="grid grid-cols-1  lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-8">
             {productsData && productsData.results.length > 0  ? productsData.results.map((product: any) => (
