@@ -132,7 +132,7 @@ export default function FiltersForm({
                         render={({ field }) => (
                             <FormItem>
                                 <FormMessage />
-                                <FormLabel>Resgistros por página</FormLabel>
+                                <FormLabel>Registros por página</FormLabel>
                                 <FormControl>
                                     <Input
                                         type="number"
