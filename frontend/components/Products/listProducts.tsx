@@ -1,6 +1,5 @@
 "use client"
 import { ProductCard } from "./productCard"
-import { Product } from "./productCard"
 import { useState } from "react"
 import { useRouter } from 'next/navigation'
 import FiltersForm from "./filtersForm"
@@ -17,11 +16,6 @@ export default function Products({ data }: ProductsProps) {
   const [productsData, setProductsData] = useState<any>(data)
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
-
-  const handleAddToCart = (product: Product) => {
-    console.log('Agregar al carrito:', product)
-    // Aquí iría la lógica para agregar al carrito
-  }
 
   const getProductsByCategory = async (category: string,limit:string,offset:string) => {
           setIsLoading(true)
@@ -57,7 +51,6 @@ export default function Products({ data }: ProductsProps) {
               <ProductCard
                 key={product.id}
                 product={product}
-                onAddToCart={handleAddToCart}
               />
             )):
               <h1 className="font-semibold text-muted-foreground">

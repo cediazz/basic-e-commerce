@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { ShoppingCart } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { useCart } from "@/context/cartContext";
 
 export interface Product {
   id: number;
@@ -26,12 +27,17 @@ export interface Product {
 }
 
 interface ProductCardProps {
-  product: Product;
-  onAddToCart?: (product: Product) => void;
+  product: Product
 }
 
-export function ProductCard({ product, onAddToCart }: ProductCardProps) {
-  const [imageError, setImageError] = useState(false);
+export function ProductCard({ product }: ProductCardProps) {
+  
+  const [imageError, setImageError] = useState(false)
+  const { addItem } = useCart()
+
+  const handleAddToCart = (product: Product) => {
+    addItem(product)
+  }
 
   return (
     <Card className="w-full max-w-sm overflow-hidden hover:shadow-lg transition-all duration-300 group">
@@ -79,7 +85,7 @@ export function ProductCard({ product, onAddToCart }: ProductCardProps) {
         <Button
           className="w-full"
           disabled={!product.is_active}
-          onClick={() => onAddToCart?.(product)}
+          onClick={() => handleAddToCart(product)}
         >
           <ShoppingCart className="h-4 w-4 mr-2" />
           {product.is_active ? "Agregar al carrito" : "Agotado"}
