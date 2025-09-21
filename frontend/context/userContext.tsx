@@ -4,6 +4,7 @@ import React, { createContext, useContext, useEffect, useState } from 'react'
 import { setCookie, deleteCookie } from 'cookies-next/client'
 import { usePathname } from 'next/navigation'
 import { useRouter } from 'next/navigation'
+import { getUserData } from '@/utils/getUserData'
 
 export interface User {
   id: number
@@ -37,10 +38,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (['/login', '/register'].includes(pathname || '')) {
       return
     }
-    checkAuth()
+    const user = getUserData()
+    if(user){
+      setUser(user)
+    }
+    else
+      router.push('/login') 
+
   }, [pathname])
 
-  const checkAuth = async () => {
+  /*const checkAuth = async () => {
     const token = localStorage.getItem('accessToken')
     if (token) {
       try {
@@ -63,10 +70,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
     }
     setIsLoading(false)
-  }
+  }*/
 
   const login = async (userData: UserData) => {
-    localStorage.setItem('accessToken', userData.access_token)
+    localStorage.setItem('userData', JSON.stringify(userData.user))
     setCookie('accessToken', userData.access_token)
     setUser(userData.user)
   }

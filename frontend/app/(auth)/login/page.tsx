@@ -22,6 +22,7 @@ import MyAlert from "@/components/Alerts/alert"
 import Link from 'next/link'
 import { useAuth } from "@/context/userContext"
 import { redirect } from 'next/navigation'
+import { setCookie } from 'cookies-next/client'
 
 const FormSchema = z.object({
   email: z.string().email("Email inválido"),
@@ -49,8 +50,8 @@ export default function LoginPage() {
     axios.post(`${process.env.NEXT_PUBLIC_BACKEND_HOST}/auth/login`, formData)
       .then(function (response) {
         if (response.status === 200) {
-          login(response.data).then(() => {
-            redirect('/products')
+          login(response.data).then(()=>{
+            redirect("/products")
           })
         }
         setLoading(false)

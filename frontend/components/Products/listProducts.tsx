@@ -18,12 +18,13 @@ export default function Products({ data }: ProductsProps) {
   const router = useRouter()
 
   const getProductsByCategory = async (category: string,limit:string,offset:string) => {
-          setIsLoading(true)
+         setIsLoading(true)
           let url: string | null = null
           if (category === "all")
               url = `/products/?offset=${offset}&limit=${limit}`
           else url = `/products/?category=${category}&offset=${offset}&limit=${limit}`
           const data = await getData(url)
+          console.log(data)
           if (data === 401) {
             router.push('/login')
           }
@@ -41,7 +42,7 @@ export default function Products({ data }: ProductsProps) {
           <div className="grid grid-cols-1  lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-8">
             <div>
               <h2 className="scroll-m-20 border-b pb-2 font-semibold tracking-tight first:mt-0">
-                Cantidad de productos: {productsData.count}
+                Cantidad de productos: {productsData && productsData.count}
               </h2>
             </div>
 

@@ -13,6 +13,7 @@ import { ShoppingCart } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useCart } from "@/context/cartContext";
+import { toast } from "sonner"
 
 export interface Product {
   id: number;
@@ -37,6 +38,14 @@ export function ProductCard({ product }: ProductCardProps) {
 
   const handleAddToCart = (product: Product) => {
     addItem(product)
+    toast(`Producto ${product.name} agregado al carrito`, {
+              action: {
+                label: "Cerrar",
+                onClick: () => console.log("Undo"),
+              },
+              position:"top-center",
+              duration : 5000
+            })
   }
 
   return (
