@@ -24,7 +24,6 @@ class OrderItemListSchema(BaseModel):
 class OrderCreateSchema(BaseModel):
     customer_id: int
     total_amount:Decimal = Field(ge=0, max_digits=12, decimal_places=2)
-    status: OrderStatus
     payment_method: PaymentMethod
     shipping_address: str
     items: List[OrderItemCreateSchema]

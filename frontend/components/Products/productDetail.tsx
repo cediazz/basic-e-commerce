@@ -6,29 +6,39 @@ import { Card } from "@/components/ui/card";
 import { ShoppingCart, ArrowLeft } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { useCart } from "@/context/cartContext";
+import { toast } from "sonner"
 
 interface Product {
-  id: number;
-  name: string;
-  description: string;
-  price: string;
-  is_active: boolean;
-  category: string;
-  image_url: string;
-  created_at: string;
+  id: number
+  name: string
+  description: string
+  price: number
+  image_url: string
+  category: string
+  is_active: boolean
+  created_at: string
 }
 
 interface ProductDetailProps {
-  product: Product;
+  product: Product
 }
 
 export default function ProductDetail({ product }: ProductDetailProps) {
   const [imageError, setImageError] = useState(false)
   const router = useRouter()
+  const { addItem } = useCart()
 
-  const handleAddToCart = () => {
-    console.log("Agregar al carrito:", product);
-    // Lógica para agregar al carrito
+  const handleAddToCart = (product: Product) => {
+    addItem(product)
+    toast(`Producto ${product.name} agregado al carrito`, {
+              action: {
+                label: "Cerrar",
+                onClick: () => console.log("Undo"),
+              },
+              position:"top-center",
+              duration : 5000
+            })
   }
 
   const formatDate = (dateString: string) => {
@@ -139,7 +149,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
                 size="lg"
                 className="flex-1 h-14 text-lg"
                 disabled={!product.is_active}
-                onClick={handleAddToCart}
+                onClick={() => handleAddToCart(product)}
               >
                 <ShoppingCart className="h-5 w-5 mr-2" />
                 Agregar al carrito

@@ -20,7 +20,6 @@ export interface Product {
   name: string;
   description: string;
   price: number;
-  originalPrice?: number;
   image_url: string;
   category: string;
   is_active: boolean;
