@@ -25,7 +25,7 @@ export default function Products({ data }: ProductsProps) {
           else url = `/products/?category=${category}&offset=${offset}&limit=${limit}`
           const data = await getData(url)
           console.log(data)
-          if (data === 401) {
+          if (data === 401 || data === undefined) {
             router.push('/login')
           }
           else setProductsData(data)

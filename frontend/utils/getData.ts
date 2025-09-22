@@ -4,14 +4,9 @@ import { cookies } from 'next/headers'
 import { redirect } from 'next/navigation'
 
 export async function getData(url: string) {
-    console.log("entrada a la funcion")
     const cookieStore = await cookies()
     const accessToken = cookieStore.get('accessToken')?.value
-    console.log("despues de token")
-    if (!accessToken) {
-        console.log("redirigir")
-        redirect('/login')
-    }
+    
 
     try {
         const res = await fetch(
@@ -20,12 +15,11 @@ export async function getData(url: string) {
                 headers: {
                     'Authorization': `Bearer ${accessToken}`,
                 },
-                cache: 'no-store' // Para evitar caché
+                cache: 'no-store'
             }
         )
-        console.log(res)
         if (res.status === 401) {
-            redirect('/login') // ← Redirige si el token es inválido
+            return 401
         }
         
         if (!res.ok) {
@@ -35,6 +29,6 @@ export async function getData(url: string) {
         return await res.json()
     } catch (error) {
         console.error('Fetch error:', error)
-        redirect('/login') // ← Redirige en caso de error
+        return
     }
 }

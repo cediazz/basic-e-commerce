@@ -2,14 +2,12 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
-   // console.log("HOLAAA desde Moddlware")
+   
     const token = request.cookies.get('accessToken')?.value
-   // console.log(token)
     // Rutas que requieren autenticación
     const protectedRoutes = ['/products', '/home', '/dashboard']
     
     if (protectedRoutes.includes(request.nextUrl.pathname) && !token) {
-       // console.log("redicrect log")
         return NextResponse.redirect(new URL('/login', request.url))
     }
 
