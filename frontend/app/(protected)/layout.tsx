@@ -25,7 +25,7 @@ export default function HomeLayout({
           </header>
           <div className="container">
             <div className="flex items-center justify-center">
-              <main>{children}</main>
+              <main className="w-full max-w-4xl mx-auto space-y-6">{children}</main>
             </div>
           </div>
         </SidebarInset>

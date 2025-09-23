@@ -64,9 +64,11 @@ export function CartItems() {
           <span className="mr-3">${total.toFixed(2)}</span>
         </div>
         <div className="flex items-center justify-center mt-4">
-          <Button>
-            <FilePlus2 /> Crear Orden de compra
-          </Button>
+          <Link href={`/orders`}>
+            <Button>
+              <FilePlus2 /> Crear Orden de compra
+            </Button>
+          </Link>
         </div>
       </div>
     </div>

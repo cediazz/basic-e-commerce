@@ -1,23 +1,22 @@
 'use server'
-
 import { cookies } from 'next/headers'
-import { redirect } from 'next/navigation'
 
-export async function getData(url: string) {
+export async function postData(url: string, data:any) {
     //await new Promise(resolve => setTimeout(resolve,5000))
     const cookieStore = await cookies()
     const accessToken = cookieStore.get('accessToken')?.value
+    let config = {
+          method: 'POST',
+          headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${accessToken}`
+          },
+          body:JSON.stringify(data)
+        }
     
     try {
-        const res = await fetch(
-            `${process.env.NEXT_PUBLIC_BACKEND_HOST}${url}`,
-            {
-                headers: {
-                    'Authorization': `Bearer ${accessToken}`,
-                },
-                cache: 'no-store'
-            }
-        )
+        const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_HOST}${url}`,config)
         if (res.status === 401) {
             return 401
         }

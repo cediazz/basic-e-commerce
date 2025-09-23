@@ -1,5 +1,5 @@
 "use client"
-import { ListOrdered, Package, ShoppingCart} from "lucide-react"
+import { ListOrdered, Package, ShoppingCart, ClipboardList, ListPlus} from "lucide-react"
 import * as React from "react"
 import { NavMain } from "@/components/nav-main"
 import { NavUser } from "@/components/nav-user"
@@ -24,8 +24,9 @@ const data = {
       isActive: true,
       items: [
         {
-          title: "Agregar productor",
+          title: "Listado de productos",
           url: "/products",
+          icon: ClipboardList,
         },
       ],
     },
@@ -35,8 +36,9 @@ const data = {
       icon: ListOrdered,
       items: [
         {
-          title: "Agregar Orden",
-          url: "*/orders",
+          title: "Crear Orden",
+          url: "/orders",
+          icon: ListPlus,
         },
       ],
     },
