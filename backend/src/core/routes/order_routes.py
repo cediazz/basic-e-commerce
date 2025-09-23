@@ -1,5 +1,5 @@
 from fastapi import APIRouter, status, Depends,Query,Request
-from ..schemas.order_schemas import OrderCreateSchema,OrderListSchema,OrderUpdateSchema
+from ..schemas.order_schemas import OrderCreateSchema,OrderListSchema,OrderUpdateSchema,OrderCreateResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from ...config import get_async_session
 from ..paginator import PaginatedResponse
@@ -10,7 +10,7 @@ order_routers = APIRouter(
     tags=["order"],
 )
 
-@order_routers.post("/",response_model=OrderCreateSchema, status_code=status.HTTP_201_CREATED)
+@order_routers.post("/",response_model=OrderCreateResponse, status_code=status.HTTP_201_CREATED)
 async def create_order(
     order_data: OrderCreateSchema,
     session: AsyncSession = Depends(get_async_session),

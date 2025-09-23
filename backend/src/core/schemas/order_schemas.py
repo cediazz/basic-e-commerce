@@ -31,6 +31,7 @@ class OrderCreateSchema(BaseModel):
 class OrderListSchema(OrderCreateSchema):
     id: int
     order_date: datetime
+    status: OrderStatus
     items: List[OrderItemListSchema]
     class Config:
         from_attributes = True
@@ -41,3 +42,6 @@ class OrderUpdateSchema(BaseModel):
     status: OrderStatus
     payment_method: PaymentMethod
     shipping_address: str
+
+class OrderCreateResponse(BaseModel):
+    id:int

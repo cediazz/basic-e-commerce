@@ -86,6 +86,7 @@ export function OrderCreateForm({ paymentMethods }: OrderCreateFormProps) {
               duration : 5000
             })
         setLoading(false)
+        router.push(`/orders/${orderOperation.id}`)
     }
 
     return (
