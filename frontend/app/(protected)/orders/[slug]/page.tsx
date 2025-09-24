@@ -1,5 +1,6 @@
 import { getData } from "@/utils/getData"
 import { redirect } from 'next/navigation'
+import { OrderDetails } from "@/components/Orders/orderDetail"
 
 export default async function OrderDetailPage({
   params,
@@ -14,6 +15,6 @@ export default async function OrderDetailPage({
       }
           
       else return(
-          <h1>OrderDetail</h1>
+          <OrderDetails order={data}/>
       )
 }
