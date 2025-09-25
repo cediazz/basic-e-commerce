@@ -3,18 +3,20 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { 
-  Calendar, 
-  MapPin, 
-  CreditCard, 
-  Package, 
-  User, 
+import {
+  Calendar,
+  MapPin,
+  CreditCard,
+  Package,
+  User,
   ArrowLeft,
   ShoppingCart,
   DollarSign
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { useAuth } from "@/context/userContext"
+
 
 export interface OrderItem {
   id: number;
@@ -50,7 +52,9 @@ interface OrderDetailsProps {
 }
 
 export function OrderDetails({ order }: OrderDetailsProps) {
-  const router = useRouter();
+
+  const router = useRouter()
+  const { user } = useAuth()
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('es-ES', {
@@ -78,11 +82,10 @@ export function OrderDetails({ order }: OrderDetailsProps) {
   };
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6">
+    <div>
       {/* Header */}
-      <div className="flex items-center gap-4">
+      <div className="flex items-center gap-4 mb-3">
         <Button
-          variant="ghost"
           onClick={() => router.back()}
           className="flex items-center gap-2"
         >
@@ -104,44 +107,67 @@ export function OrderDetails({ order }: OrderDetailsProps) {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="flex items-center gap-3">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Fecha</p>
-                    <p className="font-medium">{formatDate(order.order_date)}</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-center gap-3">
-                  <User className="h-4 w-4 text-muted-foreground" />
-                  <div>
-                    <p className="text-sm text-muted-foreground">Cliente ID</p>
-                    <p className="font-medium">#{order.customer_id}</p>
+              {/* Grid principal */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Columna izquierda - Información de la orden */}
+                <div className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1">
+                      <p className="text-sm text-muted-foreground flex items-center gap-1">
+                        <Calendar className="h-3 w-3" /> Fecha
+                      </p>
+                      <p className="font-medium">{formatDate(order.order_date)}</p>
+                    </div>
+
+                    <div className="space-y-1">
+                      <p className="text-sm text-muted-foreground flex items-center gap-1">
+                        <CreditCard className="h-3 w-3" /> Pago
+                      </p>
+                      <p className="font-medium capitalize">{order.payment_method?.toLowerCase()}</p>
+                    </div>
+
+                    <div className="space-y-1">
+                      <p className="text-sm text-muted-foreground flex items-center gap-1">
+                        <User className="h-3 w-3" /> Cliente ID
+                      </p>
+                      <p className="font-medium">#{order.customer_id}</p>
+                    </div>
+
+                    <div className="space-y-1">
+                      <p className="text-sm text-muted-foreground">Estado</p>
+                      <Badge variant={getStatusVariant(order.status)}>
+                        {order.status}
+                      </Badge>
+                    </div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-3">
-                  <CreditCard className="h-4 w-4 text-muted-foreground" />
+                {/* Columna derecha - Información del cliente */}
+                <div className="space-y-3">
                   <div>
-                    <p className="text-sm text-muted-foreground">Método de Pago</p>
-                    <p className="font-medium">{order.payment_method}</p>
+                    <p className="text-sm font-medium text-muted-foreground mb-2">Información del Cliente</p>
+                    <div className="space-y-2">
+                      <div>
+                        <p className="text-xs text-muted-foreground">Nombre completo</p>
+                        <p className="font-medium">{user?.fullname || 'No disponible'}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-muted-foreground">Email</p>
+                        <p className="font-medium truncate">{user?.email || 'No disponible'}</p>
+                      </div>
+                    </div>
                   </div>
-                </div>
-
-                <div className="flex items-center gap-3">
-                  <Badge variant={getStatusVariant(order.status)}>
-                    {order.status}
-                  </Badge>
                 </div>
               </div>
 
-              <div className="flex items-center gap-3">
-                <MapPin className="h-4 w-4 text-muted-foreground" />
-                <div>
-                  <p className="text-sm text-muted-foreground">Dirección de Envío</p>
-                  <p className="font-medium">{order.shipping_address}</p>
-                </div>
+              {/* Dirección de envío - Full width */}
+              <div className="pt-4 border-t">
+                <p className="text-sm font-medium text-muted-foreground mb-2 flex items-center gap-1">
+                  <MapPin className="h-3 w-3" /> Dirección de Envío
+                </p>
+                <p className="font-medium whitespace-pre-line bg-muted/30 p-3 rounded-md">
+                  {order.shipping_address}
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -166,7 +192,7 @@ export function OrderDetails({ order }: OrderDetailsProps) {
                         className="object-cover rounded-md"
                       />
                     </div>
-                    
+
                     <div className="flex-1 min-w-0">
                       <h4 className="font-semibold truncate">{item.product.name}</h4>
                       <p className="text-sm text-muted-foreground">
@@ -174,7 +200,7 @@ export function OrderDetails({ order }: OrderDetailsProps) {
                       </p>
                       <p className="text-sm">Cantidad: {item.quantity}</p>
                     </div>
-                    
+
                     <div className="text-right flex-shrink-0">
                       <p className="font-semibold">${item.unit_price} c/u</p>
                       <p className="text-lg font-bold text-primary">
@@ -200,12 +226,12 @@ export function OrderDetails({ order }: OrderDetailsProps) {
                 <span>Subtotal:</span>
                 <span>${order.total_amount}</span>
               </div>
-              
+
               <div className="flex justify-between items-center">
                 <span>Envío:</span>
                 <span>Gratis</span>
               </div>
-              
+
               <div className="border-t pt-3">
                 <div className="flex justify-between items-center text-lg font-bold">
                   <span>Total:</span>
@@ -221,15 +247,12 @@ export function OrderDetails({ order }: OrderDetailsProps) {
               <CardTitle>Acciones</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <Button className="w-full" variant="outline">
+              <Button className="w-full" variant="outline" disabled>
                 Imprimir Factura
-              </Button>
-              <Button className="w-full" variant="outline">
-                Reenviar Confirmación
               </Button>
               {order.status === 'pendiente' && (
                 <Button className="w-full">
-                  Marcar como Completado
+                  Pagar
                 </Button>
               )}
             </CardContent>
@@ -251,13 +274,14 @@ export function OrderDetails({ order }: OrderDetailsProps) {
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Estado:</span>
                 <Badge variant={order.status === 'pendiente' ? 'secondary' : 'default'}>
-                  {order.status === 'pendiente' ? 'Pendiente' : 'Pagado'}
+                  {order.status}
                 </Badge>
               </div>
-              <div className="flex justify-between">
+              { order.status === 'pagado' &&
+                <div className="flex justify-between">
                 <span className="text-muted-foreground">Fecha de pago:</span>
                 <span>{formatDate(order.order_date)}</span>
-              </div>
+              </div>}
             </CardContent>
           </Card>
         </div>

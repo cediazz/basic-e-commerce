@@ -8,7 +8,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useCart } from "@/context/cartContext";
 import { toast } from "sonner"
-
+import Link from "next/link";
 interface Product {
   id: number
   name: string
@@ -32,13 +32,13 @@ export default function ProductDetail({ product }: ProductDetailProps) {
   const handleAddToCart = (product: Product) => {
     addItem(product)
     toast(`Producto ${product.name} agregado al carrito`, {
-              action: {
-                label: "Cerrar",
-                onClick: () => console.log("Undo"),
-              },
-              position:"top-center",
-              duration : 5000
-            })
+      action: {
+        label: "Cerrar",
+        onClick: () => console.log("Undo"),
+      },
+      position: "top-center",
+      duration: 5000
+    })
   }
 
   const formatDate = (dateString: string) => {
@@ -76,7 +76,7 @@ export default function ProductDetail({ product }: ProductDetailProps) {
                     </span>
                   </div>
                 ) : (
-                 <Image
+                  <Image
                     src={product.image_url}
                     alt={product.name}
                     fill
@@ -154,15 +154,17 @@ export default function ProductDetail({ product }: ProductDetailProps) {
                 <ShoppingCart className="h-5 w-5 mr-2" />
                 Agregar al carrito
               </Button>
-
-              <Button
-                variant="outline"
-                size="lg"
-                className="h-14 text-lg"
-                disabled={!product.is_active}
-              >
-                Comprar ahora
-              </Button>
+              <Link href={`/orders`}>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="h-14 text-lg"
+                  disabled={!product.is_active}
+                  onClick={() => handleAddToCart(product)}
+                >
+                  Comprar ahora
+                </Button>
+              </Link>
             </div>
           </div>
         </div>
