@@ -23,7 +23,7 @@ import Link from 'next/link'
 import { useAuth } from "@/context/userContext"
 import { redirect } from 'next/navigation'
 import { setCookie } from 'cookies-next/client'
-
+import { cookies } from 'next/headers';
 const FormSchema = z.object({
   email: z.string().email("Email inválido"),
   password: z.string().nonempty("Se requiere contraseña")

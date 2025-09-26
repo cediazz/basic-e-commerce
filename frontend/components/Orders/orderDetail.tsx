@@ -16,6 +16,7 @@ import {
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { useAuth } from "@/context/userContext"
+import { formatDate } from "@/utils/formats"
 
 
 export interface OrderItem {
@@ -55,16 +56,6 @@ export function OrderDetails({ order }: OrderDetailsProps) {
 
   const router = useRouter()
   const { user } = useAuth()
-
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('es-ES', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit'
-    });
-  };
 
   const getStatusVariant = (status: string) => {
     switch (status.toLowerCase()) {

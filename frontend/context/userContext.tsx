@@ -75,6 +75,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (userData: UserData) => {
     localStorage.setItem('userData', JSON.stringify(userData.user))
     setCookie('accessToken', userData.access_token)
+    setCookie('user_id', userData.user.id)
     setUser(userData.user)
   }
 

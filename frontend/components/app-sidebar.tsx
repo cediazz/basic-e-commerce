@@ -40,6 +40,11 @@ const data = {
           url: "/orders",
           icon: ListPlus,
         },
+        {
+          title: "Lista de ordenes",
+          url: "/orders/list",
+          icon: ListOrdered,
+        },
       ],
     },
   ],
