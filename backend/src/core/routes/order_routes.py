@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from ...config import get_async_session
 from ..paginator import PaginatedResponse
 from ..services.order_services import OrderService
+from typing import Optional
 
 order_routers = APIRouter(
     prefix="/orders",
@@ -23,11 +24,12 @@ async def create_order(
 async def list_order(
     request: Request,
     session: AsyncSession = Depends(get_async_session),
+    user_id: Optional[int] = Query(None, description="Filtrar ordenes por id de usuario"),
     offset: int = Query(0, ge=0, description="Índice inicial desde el que se devolverán los resultados."),
     limit: int = Query(20, ge=1, le=30, description="Límite de registros por página."),
     order_service: OrderService = Depends(OrderService)
 ):
-    return await order_service.list_order(request,session,offset,limit)
+    return await order_service.list_order(request,session,offset,limit,user_id)
 
 @order_routers.get("/payment_methods", status_code=status.HTTP_200_OK)
 async def list_payment_methods(order_service: OrderService = Depends(OrderService)):

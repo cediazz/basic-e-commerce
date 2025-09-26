@@ -1,4 +1,4 @@
-from ..schemas.order_schemas import OrderCreateSchema, OrderListSchema,OrderUpdateSchema
+from ..schemas.order_schemas import OrderCreateSchema, OrderListSchema,OrderUpdateSchema, OrderListBasicSchema
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..dependencies import get_user_by_id, get_product_by_id
 from ..models import Order, OrderItem
@@ -7,6 +7,7 @@ from sqlalchemy import select
 from ..paginator import paginate
 from sqlalchemy.orm import selectinload
 from ..enums import PaymentMethod
+from typing import Optional
 
 class OrderService:
 
@@ -37,18 +38,26 @@ class OrderService:
         await session.refresh(order, ['items'])
         return order
 
-    async def list_order(self, request: Request, session: AsyncSession, offset: int, limit: int):
+    async def list_order(
+        self, 
+        request: Request, 
+        session: AsyncSession, 
+        offset: int, 
+        limit: int, 
+        user_id: Optional[int]=None
+    ):
         try:
-            query = select(Order)\
-                .options(
-                    selectinload(Order.items).selectinload(OrderItem.product)
-                )\
-                .order_by(Order.order_date.desc())\
-                .offset(offset)\
-                .limit(limit)
+            query = select(Order).order_by(Order.order_date.desc())
+            
+            if user_id:
+                query = query.where(Order.customer_id == user_id)
+            
+            base_query = query
+        
+            query = query.offset(offset).limit(limit)
             orders_result = await session.execute(query)
             orders = orders_result.scalars().all()
-            return await paginate(request, offset, limit, Order, query ,orders, session, OrderListSchema)
+            return await paginate(request, offset, limit, Order, base_query ,orders, session, OrderListBasicSchema)
 
         except Exception as e:
             raise HTTPException(

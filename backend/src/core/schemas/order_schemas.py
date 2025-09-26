@@ -27,6 +27,13 @@ class OrderCreateSchema(BaseModel):
     payment_method: PaymentMethod
     shipping_address: str
     items: List[OrderItemCreateSchema]
+
+class OrderListBasicSchema(BaseModel):
+    id: int
+    order_date: datetime
+    status: OrderStatus
+    class Config:
+        from_attributes = True
     
 class OrderListSchema(OrderCreateSchema):
     id: int
