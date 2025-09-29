@@ -10,7 +10,8 @@ export interface User {
   id: number
   email: string
   fullname: string
-  username: string
+  username: string,
+  is_admin: boolean
 }
 
 export interface UserData {
@@ -47,31 +48,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   }, [pathname])
 
-  /*const checkAuth = async () => {
-    const token = localStorage.getItem('accessToken')
-    if (token) {
-      try {
-        const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_HOST}/users/me`, {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        })
-        if (response.ok) {
-          const userData = await response.json()
-          setUser(userData)
-        } else {
-          localStorage.removeItem('accessToken')
-          deleteCookie('accessToken')
-        }
-      } catch (error) {
-        console.error('Auth check failed:', error)
-        localStorage.removeItem('accessToken')
-        deleteCookie('accessToken')
-      }
-    }
-    setIsLoading(false)
-  }*/
-
   const login = async (userData: UserData) => {
     localStorage.setItem('userData', JSON.stringify(userData.user))
     setCookie('accessToken', userData.access_token)
@@ -81,7 +57,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = () => {
     localStorage.removeItem('accessToken')
+    localStorage.removeItem('userData')
     deleteCookie('accessToken')
+    deleteCookie('user_id')
     setUser(null)
     router.push('/login')
   }

@@ -16,6 +16,7 @@ class CustomBearerTransport(BearerTransport):
                 "email": user.email,
                 "fullname": user.fullname,
                 "username": getattr(user, 'username', None),
+                "is_admin" : user.is_superuser
             }
         }
         
