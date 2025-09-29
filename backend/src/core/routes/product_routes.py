@@ -22,7 +22,7 @@ product_routers = APIRouter(
 async def create_product(
     name: str = Form(...),
     description: str = Form(...),
-    price: float = Form(..., ge=0),
+    price: float = Form(..., ge=0, max_digits=10, decimal_places=2),
     category: str = Form(...),
     is_active: bool = Form(default=True),
     image: UploadFile = File(),
