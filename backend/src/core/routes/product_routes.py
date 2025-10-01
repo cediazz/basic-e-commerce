@@ -12,6 +12,7 @@ from ...config import HOST
 from sqlalchemy import select,func
 from ..paginator import paginate,PaginatedResponse
 from typing import Optional
+from decimal import Decimal
 
 product_routers = APIRouter(
     prefix="/products",
@@ -22,7 +23,7 @@ product_routers = APIRouter(
 async def create_product(
     name: str = Form(...),
     description: str = Form(...),
-    price: float = Form(..., ge=0, max_digits=10, decimal_places=2),
+    price: Decimal = Form(..., ge=0, max_digits=10, decimal_places=2),
     category: str = Form(...),
     is_active: bool = Form(default=True),
     image: UploadFile = File(),
