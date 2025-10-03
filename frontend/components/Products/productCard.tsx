@@ -13,7 +13,15 @@ import { ShoppingCart } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 import { useCart } from "@/context/cartContext";
-import { toast } from "sonner"
+import { toast } from "sonner";
+import { AlertDialogDelete } from "../Alerts/alertDialog";
+import { useAuth } from "@/context/userContext";
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from "@/components/ui/tooltip"
+import { SquarePen } from "lucide-react";
 
 export interface Product {
   id: number;
@@ -27,25 +35,26 @@ export interface Product {
 }
 
 interface ProductCardProps {
-  product: Product
+  product: Product;
+  deleteProduct: (id: number) => void;
 }
 
-export function ProductCard({ product }: ProductCardProps) {
-  
-  const [imageError, setImageError] = useState(false)
-  const { addItem } = useCart()
+export function ProductCard({ product, deleteProduct }: ProductCardProps) {
+  const [imageError, setImageError] = useState(false);
+  const { addItem } = useCart();
+  const { user } = useAuth();
 
   const handleAddToCart = (product: Product) => {
-    addItem(product)
+    addItem(product);
     toast(`Producto ${product.name} agregado al carrito`, {
-              action: {
-                label: "Cerrar",
-                onClick: () => console.log("Undo"),
-              },
-              position:"top-center",
-              duration : 5000
-            })
-  }
+      action: {
+        label: "Cerrar",
+        onClick: () => console.log("Undo"),
+      },
+      position: "top-center",
+      duration: 5000,
+    });
+  };
 
   return (
     <Card className="w-full max-w-sm overflow-hidden hover:shadow-lg transition-all duration-300 group">
@@ -90,14 +99,35 @@ export function ProductCard({ product }: ProductCardProps) {
 
       {/* Footer con botón de compra */}
       <CardFooter className="p-4 pt-0">
-        <Button
-          className="w-full"
-          disabled={!product.is_active}
-          onClick={() => handleAddToCart(product)}
-        >
-          <ShoppingCart className="h-4 w-4 mr-2" />
-          {product.is_active ? "Agregar al carrito" : "Agotado"}
-        </Button>
+        <div className="flex flex-row">
+          <Button
+            className="h-8"
+            disabled={!product.is_active}
+            onClick={() => handleAddToCart(product)}
+          >
+            <ShoppingCart className="h-4 w-4 mr-1" />
+            {product.is_active ? "Agregar" : "Agotado"}
+          </Button>
+          {user?.is_admin && (
+            <>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                    <Button size="icon" className="size-8 ml-1">
+                      <SquarePen />
+                    </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                    <p>Editar</p>
+                </TooltipContent>
+            </Tooltip>
+              <AlertDialogDelete
+                entityID={product.id}
+                entityName="Producto"
+                deleteFunction={deleteProduct}
+              />
+            </>
+          )}
+        </div>
       </CardFooter>
     </Card>
   );

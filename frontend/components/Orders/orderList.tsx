@@ -106,7 +106,7 @@ export default function OrdersList({ data }: OrderProps) {
                     </TableHeader>
                     <TableBody>
                         {ordersData.results.map((order: any) => (
-                            <TableRow>
+                            <TableRow key={order.id}>
                                 <TableCell className="font-medium">{order.id}</TableCell>
                                 <TableCell>{formatDate(order.order_date)}</TableCell>
                                 <TableCell>{order.status}</TableCell>
