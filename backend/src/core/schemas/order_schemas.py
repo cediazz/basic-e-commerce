@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 from datetime import datetime
 from ..enums import OrderStatus,PaymentMethod
-from typing import List
+from typing import List, Optional
 from decimal import Decimal
 from pydantic import Field
 from.product_schemas import ProductListSchema
@@ -10,6 +10,9 @@ class OrderItemCreateSchema(BaseModel):
     product_id: int 
     quantity: int
     unit_price:Decimal = Field(ge=0, max_digits=10, decimal_places=2)
+
+class OrderItemUpdateSchema(OrderItemCreateSchema):
+    id: Optional[int] = None
 
 class OrderItemListSchema(BaseModel):
     id: int
@@ -43,12 +46,10 @@ class OrderListSchema(OrderCreateSchema):
     class Config:
         from_attributes = True
 
-class OrderUpdateSchema(BaseModel):
-    customer_id: int
-    total_amount:Decimal = Field(ge=0, max_digits=12, decimal_places=2)
+class OrderUpdateSchema(OrderCreateSchema):
     status: OrderStatus
-    payment_method: PaymentMethod
-    shipping_address: str
+    items: List[OrderItemUpdateSchema]
+    
 
 class OrderCreateResponse(BaseModel):
     id:int

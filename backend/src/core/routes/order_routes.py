@@ -60,3 +60,11 @@ async def delete_order(
     order_service: OrderService = Depends(OrderService)
 ):
     return await order_service.delete_order(order_id,session)
+
+@order_routers.delete("/order_items/{order_item_id}",status_code=status.HTTP_204_NO_CONTENT)
+async def delete_order_item(
+    order_item_id: int,
+    session: AsyncSession = Depends(get_async_session),
+    order_service: OrderService = Depends(OrderService)
+):
+    return await order_service.delete_order_item(order_item_id,session)

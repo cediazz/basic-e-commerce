@@ -83,18 +83,57 @@ class OrderService:
             )
         return order
     
+    async def get_order_item(self, order_item_id: int, session: AsyncSession):
+        query = (
+            select(OrderItem)
+            .where(OrderItem.id == order_item_id)
+        )
+        result = await session.scalars(query)
+        order_item = result.first()
+        if not order_item:
+            raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="No se encontró el item para el id solicitado"
+            )
+        return order_item
+    
     async def update_order(self, order_id: int, order_data: OrderUpdateSchema, session: AsyncSession):
-        order = await self.get_order(order_id,session)#session.get(Order, order_id)
         
-        await get_user_by_id(order_data.customer_id, session)
+        data_as_dict = order_data.model_dump(exclude_unset=True)
+        items_data = data_as_dict.pop('items', [])
         
+        order = await self.get_order(order_id, session)
+        
+        # Actualizar campos básicos de la orden
         order.customer_id = order_data.customer_id
         order.total_amount = order_data.total_amount
         order.status = order_data.status
         order.payment_method = order_data.payment_method
         order.shipping_address = order_data.shipping_address
+        
+        # Procesar items
+        for item_data in items_data:
+            if item_data.get('id') is not None:
+                # Actualizar OrderItem existente
+                order_item = await self.get_order_item(item_data['id'], session)
+                order_item.product_id = item_data['product_id']
+                order_item.quantity = item_data['quantity']
+                order_item.unit_price = item_data['unit_price']
+                order_item.subtotal = item_data['quantity'] * item_data['unit_price']
+            else:
+                # Crear nuevo OrderItem
+                order_item = OrderItem(
+                    product_id=item_data['product_id'],
+                    quantity=item_data['quantity'],
+                    unit_price=item_data['unit_price'],
+                    subtotal=item_data['quantity'] * item_data['unit_price']
+                )
+                order.items.append(order_item)
         await session.commit()
-        await session.refresh(order)
+        # Limpiar completamente la sesión para forzar recarga de todas las relaciones
+        session.expire_all()
+        # Recargar la orden COMPLETA con todas las relaciones antes de retornar
+        order = await self.get_order(order_id, session)
         return order
     
     async def delete_order(self, order_id: int, session: AsyncSession):
@@ -102,6 +141,14 @@ class OrderService:
         if not order:
             raise HTTPException(status_code=404, detail="No se encontró la orden para el id solicitado")
         await session.delete(order)
+        await session.commit()
+        return {"ok": True}
+    
+    async def delete_order_item(self, order_item_id: int, session: AsyncSession):
+        order_item = await session.get(OrderItem, order_item_id)
+        if not order_item:
+            raise HTTPException(status_code=404, detail="No se encontró el item order para el id solicitado")
+        await session.delete(order_item)
         await session.commit()
         return {"ok": True}
     
