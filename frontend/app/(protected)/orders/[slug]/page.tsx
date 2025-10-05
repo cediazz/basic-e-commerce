@@ -9,7 +9,6 @@ export default async function OrderDetailPage({
 }) {
   const { slug } = await params
   const data = await getData(`/orders/${slug}`)
-  console.log(data)
       if (data === 401){
           redirect('/login')
       }

@@ -15,7 +15,7 @@ import {
 import { formatDate } from "@/utils/formats"
 import Link from "next/link";
 import { Button } from "@/components/ui/button"
-import { Eye } from "lucide-react"
+import { Eye, SquarePen } from "lucide-react"
 import {
     Tooltip,
     TooltipContent,
@@ -122,6 +122,18 @@ export default function OrdersList({ data }: OrderProps) {
                                         </TooltipTrigger>
                                         <TooltipContent>
                                             <p>Detalles</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Link href={`/orders/update/${order.id}`}>
+                                                <Button size="icon" className="size-8 ml-1">
+                                                    <SquarePen />
+                                                </Button>
+                                            </Link>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Editar</p>
                                         </TooltipContent>
                                     </Tooltip>
                                     <AlertDialogDelete
