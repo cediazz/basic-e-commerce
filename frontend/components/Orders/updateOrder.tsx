@@ -1,4 +1,3 @@
-// components/order-create-form.tsx
 "use client";
 
 import { useState, useEffect } from "react";
@@ -33,11 +32,20 @@ import { useRouter } from 'next/navigation'
 import { Loader2Icon } from "lucide-react"
 import { toast } from "sonner"
 import { Order } from "./orderDetail";
-
+import { AlertDialogDelete } from "../Alerts/alertDialog"
+import { deleteData } from "@/utils/deleteData"
 
 interface OrderUpdateFormProps {
     paymentMethods: string[],
     order: Order
+}
+
+interface Item {
+    product_id: number,
+    product_name: string
+    quantity: number,
+    unit_price: string,
+    id: number | null
 }
 
 export function OrderUpdateForm({ paymentMethods, order }: OrderUpdateFormProps) {
@@ -47,12 +55,6 @@ export function OrderUpdateForm({ paymentMethods, order }: OrderUpdateFormProps)
     const router = useRouter()
     const [loading, setLoading] = useState(false)
     const [orderData, setOrderData] = useState<OrderUpdateFormProps['order']>(order)
-
-    useEffect(()=>{
-        orderData.items.map((item) =>{
-            addItem({...item.product,price: Number(item.product.price)})
-        })
-    },[])
 
     const FormSchema = z.object({
         paymentMethod: z.string({
@@ -92,15 +94,36 @@ export function OrderUpdateForm({ paymentMethods, order }: OrderUpdateFormProps)
             router.push('/login')
         }
         toast(`Orden creada satisfactoriamente`, {
-              action: {
+            action: {
                 label: "Cerrar",
                 onClick: () => console.log("Undo"),
-              },
-              position:"top-center",
-              duration : 5000
-            })
+            },
+            position: "top-center",
+            duration: 5000
+        })
         setLoading(false)
         router.push(`/orders/${orderOperation.id}`)
+    }
+
+    const updateOrderData = (id: number) => {
+        setOrderData(prev => ({
+            ...prev,
+            items: prev.items.filter(item => item.id !== id)
+        }))
+    }
+
+    const deleteItem = async (itemId: number) => {
+        setLoading(true)
+        const data = await deleteData(`/orders/order_items/${itemId}`)
+        console.log(data)
+        if (data === 401 || data === undefined) {
+            router.push('/login')
+        }
+        if (data === 204) {
+            updateOrderData(itemId)
+        }
+        setLoading(false)
+
     }
 
     return (
@@ -130,6 +153,23 @@ export function OrderUpdateForm({ paymentMethods, order }: OrderUpdateFormProps)
                                         </span>
                                         <span className="text-lg font-semibold text-primary whitespace-nowrap">
                                             ${(item.price * item.quantity).toFixed(2)}
+                                        </span>
+                                    </div>
+                                ))}
+                                {orderData.items.map((item, index) => (
+                                    <div key={index} className="flex justify-between items-center mb-3">
+                                        <span className="text-base font-medium flex-1 mr-4">
+                                            <Link href={`/products/${item.product.id}`}>
+                                                {item.product.name} ({item.quantity})
+                                            </Link>
+                                            <AlertDialogDelete
+                                                entityID={item.id}
+                                                entityName="Item Orden"
+                                                deleteFunction={deleteItem}
+                                            />
+                                        </span>
+                                        <span className="text-lg font-semibold text-primary whitespace-nowrap">
+                                            ${(Number(item.unit_price) * item.quantity).toFixed(2)}
                                         </span>
                                     </div>
                                 ))}
@@ -194,11 +234,11 @@ export function OrderUpdateForm({ paymentMethods, order }: OrderUpdateFormProps)
                                 className="flex-1"
                             >
                                 {loading && <Loader2Icon className="animate-spin" />}
-                                    
+
                                 <ShoppingCart className="h-4 w-4 mr-2" />
                                 Actualizar
-                                    
-                               
+
+
                             </Button>
                         </div>
                     </form>
