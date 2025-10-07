@@ -22,18 +22,23 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2, ShoppingCart } from "lucide-react";
+import { ShoppingCart, Loader2Icon, PackagePlus, PackageMinus, Trash2 } from "lucide-react";
 import { z } from "zod"
 import { useCart } from "@/context/cartContext";
 import Link from "next/link";
 import { useAuth } from "@/context/userContext"
 import { postData } from "@/utils/postData";
 import { useRouter } from 'next/navigation'
-import { Loader2Icon } from "lucide-react"
 import { toast } from "sonner"
-import { Order } from "./orderDetail";
+import { Order, OrderItem } from "./orderDetail";
 import { AlertDialogDelete } from "../Alerts/alertDialog"
 import { deleteData } from "@/utils/deleteData"
+import LoadingUpdateOrders from "@/app/(protected)/orders/update/[slug]/loading"
+import {
+    Tooltip,
+    TooltipContent,
+    TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 interface OrderUpdateFormProps {
     paymentMethods: string[],
@@ -50,11 +55,20 @@ interface Item {
 
 export function OrderUpdateForm({ paymentMethods, order }: OrderUpdateFormProps) {
 
-    const { items, total, addItem } = useCart()
-    const { user } = useAuth()
+    const { items, total, updateQuantity, removeItem } = useCart()
     const router = useRouter()
     const [loading, setLoading] = useState(false)
     const [orderData, setOrderData] = useState<OrderUpdateFormProps['order']>(order)
+    const [totalAmount, setTotalAmount] = useState<number>() //cartItems + ItemsBD
+
+    useEffect(() => {
+
+        const orderItemsTotal = orderData.items.reduce((sum, item) =>
+            sum + (Number(item.unit_price) * item.quantity), 0
+        )
+        const newTotal = total + orderItemsTotal
+        setTotalAmount(parseFloat(newTotal.toFixed(2)))
+    }, [items, orderData.items])
 
     const FormSchema = z.object({
         paymentMethod: z.string({
@@ -75,21 +89,30 @@ export function OrderUpdateForm({ paymentMethods, order }: OrderUpdateFormProps)
     })
 
     const handleSubmit = async (data: z.infer<typeof FormSchema>) => {
-        setLoading(true)
-        const orderData = {
-            customer_id: user?.id,
-            total_amount: total,
+        //setLoading(true)
+        const orderDatatoSend = {
+            customer_id: orderData.customer_id,
+            total_amount: totalAmount,
             payment_method: data.paymentMethod,
             shipping_address: data.shippingAddress,
-            items: items.map((item) => {
-                return {
+            items: [
+                // Items del carrito (nuevos)
+                ...items.map(item => ({
                     product_id: item.id,
                     quantity: item.quantity,
-                    unit_price: item.price
-                }
-            })
+                    unit_price: item.price.toString(),
+                })),
+                // Items existentes de la BD
+                ...orderData.items.map(item => ({
+                    product_id: item.product.id,
+                    quantity: item.quantity,
+                    unit_price: item.unit_price,
+                    id: item.id // Incluir ID para actualizar
+                }))
+            ]
         }
-        const orderOperation = await postData("/orders/", orderData)
+        console.log(orderDatatoSend)
+        /*const orderOperation = await postData("/orders/", orderData)
         if (orderOperation === 401 || orderOperation === undefined) {
             router.push('/login')
         }
@@ -102,13 +125,45 @@ export function OrderUpdateForm({ paymentMethods, order }: OrderUpdateFormProps)
             duration: 5000
         })
         setLoading(false)
-        router.push(`/orders/${orderOperation.id}`)
+        router.push(`/orders/${orderOperation.id}`)*/
     }
 
     const updateOrderData = (id: number) => {
         setOrderData(prev => ({
             ...prev,
             items: prev.items.filter(item => item.id !== id)
+        }))
+    }
+
+    const IncreaseItem = (item: OrderItem) => {
+        setOrderData(prev => ({
+            ...prev,
+            items: prev.items.map(
+                (currentItem: OrderItem) => currentItem.id === item.id ?
+                    {
+                        ...currentItem,
+                        quantity: currentItem.quantity + 1,
+                        subtotal: (currentItem.quantity * Number(currentItem.unit_price)).toString()
+                    }
+                    :
+                    currentItem
+            )
+        }))
+    }
+
+    const decreaseItem = (item: OrderItem) => {
+        setOrderData(prev => ({
+            ...prev,
+            items: prev.items.map(
+                (currentItem: OrderItem) => currentItem.id === item.id && currentItem.quantity > 1 ?
+                    {
+                        ...currentItem,
+                        quantity: currentItem.quantity - 1,
+                        subtotal: ((currentItem.quantity - 1) * Number(currentItem.unit_price)).toString()
+                    }
+                    :
+                    currentItem
+            )
         }))
     }
 
@@ -126,6 +181,8 @@ export function OrderUpdateForm({ paymentMethods, order }: OrderUpdateFormProps)
 
     }
 
+    if (loading) return <LoadingUpdateOrders />
+
     return (
         <Card>
             <CardHeader>
@@ -135,53 +192,114 @@ export function OrderUpdateForm({ paymentMethods, order }: OrderUpdateFormProps)
                 </CardTitle>
             </CardHeader>
             <CardContent>
+                <Card className="bg-primary/5">
+                    <CardContent className="p-4">
+                        {items.length != 0 &&
+                            <div className="flex justify-between items-center mb-4">
+                                <span className="text-lg font-semibold">Productos del carrito:</span>
+                            </div>}
+
+                        {items.map((item, index) => (
+                            <div key={index} className="flex justify-between items-center mb-3">
+                                <span className="text-base font-medium flex-1 mr-4">
+                                    <Link href={`/products/${item.id}`}>
+                                        {item.name}({item.quantity})
+                                        <span className="text-lg font-semibold text-primary whitespace-nowrap ml-1">
+                                            ${item.price}
+                                        </span>
+                                    </Link>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button size="icon" onClick={() => updateQuantity(item.id, item.quantity + 1)} className="size-8 ml-1">
+                                                <PackagePlus />
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Agregar</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button size="icon" onClick={() => updateQuantity(item.id, item.quantity - 1)} className="size-8 ml-1">
+                                                <PackageMinus />
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Quitar</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button variant="destructive" size="icon" onClick={() => removeItem(item.id)} className="size-8 ml-1">
+                                                <Trash2 />
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Eliminar</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                </span>
+                                <span className="text-lg font-semibold text-primary whitespace-nowrap">
+                                    ${(item.price * item.quantity).toFixed(2)}
+                                </span>
+                            </div>
+                        ))}
+                        {orderData.items.length != 0 &&
+                            <div className="flex justify-between items-center mb-4">
+                                <span className="text-lg font-semibold">Productos de la orden:</span>
+                            </div>}
+                        {orderData.items.map((item, index) => (
+                            <div key={index} className="flex justify-between items-center mb-3">
+                                <span className="text-base font-medium flex-1 mr-4">
+                                    <Link href={`/products/${item.product.id}`}>
+                                        {item.product.name}({item.quantity})
+                                        <span className="text-lg font-semibold text-primary whitespace-nowrap ml-1">
+                                            ${item.unit_price}
+                                        </span>
+                                    </Link>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button size="icon" onClick={() => IncreaseItem(item)} className="size-8 ml-1">
+                                                <PackagePlus />
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Agregar</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                    <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Button size="icon" onClick={() => decreaseItem(item)} className="size-8 ml-1">
+                                                <PackageMinus />
+                                            </Button>
+                                        </TooltipTrigger>
+                                        <TooltipContent>
+                                            <p>Quitar</p>
+                                        </TooltipContent>
+                                    </Tooltip>
+                                    <AlertDialogDelete
+                                        entityID={item.id}
+                                        entityName="Item Orden"
+                                        deleteFunction={deleteItem}
+                                    />
+                                </span>
+                                <span className="text-lg font-semibold text-primary whitespace-nowrap">
+                                    ${(Number(item.unit_price) * item.quantity).toFixed(2)}
+                                </span>
+                            </div>
+                        ))}
+
+                        <div className="flex justify-between items-center pt-3 mt-3 border-t">
+                            <span className="text-lg font-semibold">Total:</span>
+                            <span className="text-2xl font-bold text-primary">
+                                ${totalAmount && totalAmount.toFixed(2)}
+                            </span>
+                        </div>
+                    </CardContent>
+                </Card>
                 <Form {...form}>
-                    <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-                        {/* Total */}
-                        <Card className="bg-primary/5">
-                            <CardContent className="p-4">
-                                <div className="flex justify-between items-center mb-4">
-                                    <span className="text-lg font-semibold">Productos:</span>
-                                </div>
+                    <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6 mt-3">
 
-                                {items.map((item, index) => (
-                                    <div key={index} className="flex justify-between items-center mb-3">
-                                        <span className="text-base font-medium flex-1 mr-4">
-                                            <Link href={`/products/${item.id}`}>
-                                                {item.name} ({item.quantity})
-                                            </Link>
-                                        </span>
-                                        <span className="text-lg font-semibold text-primary whitespace-nowrap">
-                                            ${(item.price * item.quantity).toFixed(2)}
-                                        </span>
-                                    </div>
-                                ))}
-                                {orderData.items.map((item, index) => (
-                                    <div key={index} className="flex justify-between items-center mb-3">
-                                        <span className="text-base font-medium flex-1 mr-4">
-                                            <Link href={`/products/${item.product.id}`}>
-                                                {item.product.name} ({item.quantity})
-                                            </Link>
-                                            <AlertDialogDelete
-                                                entityID={item.id}
-                                                entityName="Item Orden"
-                                                deleteFunction={deleteItem}
-                                            />
-                                        </span>
-                                        <span className="text-lg font-semibold text-primary whitespace-nowrap">
-                                            ${(Number(item.unit_price) * item.quantity).toFixed(2)}
-                                        </span>
-                                    </div>
-                                ))}
-
-                                <div className="flex justify-between items-center pt-3 mt-3 border-t">
-                                    <span className="text-lg font-semibold">Total:</span>
-                                    <span className="text-2xl font-bold text-primary">
-                                        ${total.toFixed(2)}
-                                    </span>
-                                </div>
-                            </CardContent>
-                        </Card>
                         {/* Método de Pago */}
                         <FormField
                             control={form.control}
@@ -230,13 +348,13 @@ export function OrderUpdateForm({ paymentMethods, order }: OrderUpdateFormProps)
                         <div className="flex gap-4">
                             <Button
                                 type="submit"
-                                disabled={items.length === 0}
+                                disabled={items.length === 0 && orderData.items.length === 0}
                                 className="flex-1"
                             >
                                 {loading && <Loader2Icon className="animate-spin" />}
 
                                 <ShoppingCart className="h-4 w-4 mr-2" />
-                                Actualizar
+                                Guardar
 
 
                             </Button>

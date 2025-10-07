@@ -1,7 +1,6 @@
-import { Skeleton } from "@/components/ui/skeleton";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Skeleton } from "@/components/ui/skeleton"
 
-export default function LoadingOrders() {
+export default function LoadingUpdateOrders() {
   return (
 
     <div className="space-y-3">
