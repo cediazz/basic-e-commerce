@@ -19,15 +19,13 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ShoppingCart, Loader2Icon, PackagePlus, PackageMinus, Trash2 } from "lucide-react";
 import { z } from "zod"
-import { useCart } from "@/context/cartContext";
-import Link from "next/link";
-import { useAuth } from "@/context/userContext"
-import { postData } from "@/utils/postData";
+import { useCart } from "@/context/cartContext"
+import Link from "next/link"
+import { putData } from "@/utils/putData";
 import { useRouter } from 'next/navigation'
 import { toast } from "sonner"
 import { Order, OrderItem } from "./orderDetail";
@@ -45,17 +43,9 @@ interface OrderUpdateFormProps {
     order: Order
 }
 
-interface Item {
-    product_id: number,
-    product_name: string
-    quantity: number,
-    unit_price: string,
-    id: number | null
-}
-
 export function OrderUpdateForm({ paymentMethods, order }: OrderUpdateFormProps) {
 
-    const { items, total, updateQuantity, removeItem } = useCart()
+    const { items, updateQuantity, removeItem } = useCart()
     const router = useRouter()
     const [loading, setLoading] = useState(false)
     const [orderData, setOrderData] = useState<OrderUpdateFormProps['order']>(order)
@@ -66,7 +56,13 @@ export function OrderUpdateForm({ paymentMethods, order }: OrderUpdateFormProps)
         const orderItemsTotal = orderData.items.reduce((sum, item) =>
             sum + (Number(item.unit_price) * item.quantity), 0
         )
-        const newTotal = total + orderItemsTotal
+
+        const itemsCartTotal = items.filter(
+            item => item.id != orderData.items.find(itemA => itemA.product.id === item.id)?.product.id
+        ).reduce((sum, item) => sum + (item.price * item.quantity), 0).toFixed(2)
+
+        const newTotal = Number(itemsCartTotal) + orderItemsTotal
+
         setTotalAmount(parseFloat(newTotal.toFixed(2)))
     }, [items, orderData.items])
 
@@ -89,15 +85,16 @@ export function OrderUpdateForm({ paymentMethods, order }: OrderUpdateFormProps)
     })
 
     const handleSubmit = async (data: z.infer<typeof FormSchema>) => {
-        //setLoading(true)
+        setLoading(true)
         const orderDatatoSend = {
             customer_id: orderData.customer_id,
             total_amount: totalAmount,
             payment_method: data.paymentMethod,
             shipping_address: data.shippingAddress,
+            status: "pendiente",
             items: [
                 // Items del carrito (nuevos)
-                ...items.map(item => ({
+                ...items.filter(item => item.id != orderData.items.find(itemA => itemA.product.id === item.id)?.product.id).map(item => ({
                     product_id: item.id,
                     quantity: item.quantity,
                     unit_price: item.price.toString(),
@@ -111,21 +108,20 @@ export function OrderUpdateForm({ paymentMethods, order }: OrderUpdateFormProps)
                 }))
             ]
         }
-        console.log(orderDatatoSend)
-        /*const orderOperation = await postData("/orders/", orderData)
+        const orderOperation = await putData(`/orders/${orderData.id}`, orderDatatoSend)
         if (orderOperation === 401 || orderOperation === undefined) {
             router.push('/login')
         }
-        toast(`Orden creada satisfactoriamente`, {
+        toast.success(`Orden editada satisfactoriamente`, {
             action: {
                 label: "Cerrar",
-                onClick: () => console.log("Undo"),
+                onClick: () => console.log("Undo")
             },
             position: "top-center",
             duration: 5000
         })
         setLoading(false)
-        router.push(`/orders/${orderOperation.id}`)*/
+        router.push(`/orders/${orderOperation.id}`)
     }
 
     const updateOrderData = (id: number) => {
@@ -194,12 +190,11 @@ export function OrderUpdateForm({ paymentMethods, order }: OrderUpdateFormProps)
             <CardContent>
                 <Card className="bg-primary/5">
                     <CardContent className="p-4">
-                        {items.length != 0 &&
+                        {items.filter(item => item.id != orderData.items.find(itemA => itemA.product.id === item.id)?.product.id).length != 0 &&
                             <div className="flex justify-between items-center mb-4">
                                 <span className="text-lg font-semibold">Productos del carrito:</span>
                             </div>}
-
-                        {items.map((item, index) => (
+                        {items.filter(item => item.id != orderData.items.find(itemA => itemA.product.id === item.id)?.product.id).map((item, index) => (
                             <div key={index} className="flex justify-between items-center mb-3">
                                 <span className="text-base font-medium flex-1 mr-4">
                                     <Link href={`/products/${item.id}`}>
