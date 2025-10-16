@@ -77,11 +77,11 @@ export function OrderDetails({ order }: OrderDetailsProps) {
       {/* Header */}
       <div className="flex items-center gap-4 mb-3">
         <Button
-          onClick={() => router.back()}
+          onClick={() => router.push("/orders/list")}
           className="flex items-center gap-2"
         >
           <ArrowLeft className="h-4 w-4" />
-          Volver
+          Listado de ordenes
         </Button>
         <h1 className="text-3xl font-bold">Detalles de la Orden</h1>
       </div>

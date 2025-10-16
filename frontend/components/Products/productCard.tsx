@@ -17,9 +17,9 @@ import { toast } from "sonner";
 import { AlertDialogDelete } from "../Alerts/alertDialog";
 import { useAuth } from "@/context/userContext";
 import {
-    Tooltip,
-    TooltipContent,
-    TooltipTrigger,
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { SquarePen } from "lucide-react";
 
@@ -109,23 +109,11 @@ export function ProductCard({ product, deleteProduct }: ProductCardProps) {
             {product.is_active ? "Agregar" : "Agotado"}
           </Button>
           {user?.is_admin && (
-            <>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                    <Button size="icon" className="size-8 ml-1">
-                      <SquarePen />
-                    </Button>
-                </TooltipTrigger>
-                <TooltipContent>
-                    <p>Editar</p>
-                </TooltipContent>
-            </Tooltip>
-              <AlertDialogDelete
-                entityID={product.id}
-                entityName="Producto"
-                deleteFunction={deleteProduct}
-              />
-            </>
+            <AlertDialogDelete
+              entityID={product.id}
+              entityName="Producto"
+              deleteFunction={deleteProduct}
+            />
           )}
         </div>
       </CardFooter>

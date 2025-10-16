@@ -22,8 +22,8 @@ import MyAlert from "@/components/Alerts/alert"
 import Link from 'next/link'
 import { useAuth } from "@/context/userContext"
 import { redirect } from 'next/navigation'
-import { setCookie } from 'cookies-next/client'
-import { cookies } from 'next/headers';
+import { useRouter } from 'next/navigation'
+
 const FormSchema = z.object({
   email: z.string().email("Email inválido"),
   password: z.string().nonempty("Se requiere contraseña")
@@ -41,7 +41,8 @@ export default function LoginPage() {
   const [loading, setLoading] = useState<boolean>(false)
   const [error, setError] = useState('')
   const { login } = useAuth()
-
+  const router = useRouter()
+  
   async function onSubmit(data: z.infer<typeof FormSchema>) {
     setLoading(true)
     let formData = new FormData()
@@ -51,7 +52,7 @@ export default function LoginPage() {
       .then(function (response) {
         if (response.status === 200) {
           login(response.data).then(()=>{
-            redirect("/products")
+            router.push("/products")
           })
         }
         setLoading(false)
