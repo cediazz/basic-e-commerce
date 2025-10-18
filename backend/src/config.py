@@ -9,6 +9,9 @@ from pathlib import Path
 
 #***SECRET_KEY***
 SECRET = os.environ.get('SECRET_KEY', config('SECRET_KEY'))
+STRIPE_SECRET_KEY = config('STRIPE_SECRET_KEY')
+STRIPE_WEBHOOK_SECRET = config('STRIPE_WEBHOOK_SECRET')
+STRIPE_PUBLISHABLE_KEY = config('STRIPE_PUBLISHABLE_KEY')
 
 #***host configuration***
 HOST = f"https://{os.environ.get('RENDER_EXTERNAL_HOSTNAME', '')}" if os.environ.get('RENDER_EXTERNAL_HOSTNAME') else 'http://127.0.0.1:8000'
