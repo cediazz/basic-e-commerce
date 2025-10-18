@@ -49,7 +49,9 @@ class OrderListSchema(OrderCreateSchema):
 class OrderUpdateSchema(OrderCreateSchema):
     status: OrderStatus
     items: List[OrderItemUpdateSchema]
-    
 
+class OrderUpdateStatus(BaseModel):
+    status: OrderStatus
+    
 class OrderCreateResponse(BaseModel):
     id:int

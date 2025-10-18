@@ -1,5 +1,5 @@
 from fastapi import APIRouter, status, Depends,Query,Request
-from ..schemas.order_schemas import OrderCreateSchema,OrderListSchema,OrderUpdateSchema,OrderCreateResponse
+from ..schemas.order_schemas import OrderCreateSchema,OrderListSchema,OrderUpdateSchema,OrderCreateResponse,OrderUpdateStatus 
 from sqlalchemy.ext.asyncio import AsyncSession
 from ...config import get_async_session
 from ..paginator import PaginatedResponse
@@ -52,6 +52,15 @@ async def update_order(
     order_service: OrderService = Depends(OrderService)
 ):
     return await order_service.update_order(order_id,order_data,session)
+
+@order_routers.patch("/order_status/{order_id}",response_model=OrderListSchema, status_code=status.HTTP_200_OK)
+async def update_order_status(
+    order_id: int,
+    order_data: OrderUpdateStatus,
+    session: AsyncSession = Depends(get_async_session),
+    order_service: OrderService = Depends(OrderService)
+):
+    return await order_service.update_order_status(order_id,order_data,session)
 
 @order_routers.delete("/{order_id}",status_code=status.HTTP_204_NO_CONTENT)
 async def delete_order(

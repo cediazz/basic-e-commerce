@@ -1,4 +1,4 @@
-from ..schemas.order_schemas import OrderCreateSchema, OrderListSchema,OrderUpdateSchema, OrderListBasicSchema
+from ..schemas.order_schemas import OrderCreateSchema,OrderUpdateStatus,OrderUpdateSchema, OrderListBasicSchema
 from sqlalchemy.ext.asyncio import AsyncSession
 from ..dependencies import get_user_by_id, get_product_by_id
 from ..models import Order, OrderItem
@@ -134,6 +134,15 @@ class OrderService:
         session.expire_all()
         # Recargar la orden COMPLETA con todas las relaciones antes de retornar
         order = await self.get_order(order_id, session)
+        return order
+    
+    async def update_order_status(self, order_id: int, order_data: OrderUpdateStatus, session: AsyncSession):
+        
+        order = await self.get_order(order_id, session)
+        order.status = order_data.status
+        
+        await session.commit()
+        await session.refresh(order)
         return order
     
     async def delete_order(self, order_id: int, session: AsyncSession):
