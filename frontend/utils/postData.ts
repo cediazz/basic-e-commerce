@@ -17,6 +17,7 @@ export async function postData(url: string, data:any) {
     
     try {
         const res = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_HOST}${url}`,config)
+        console.log(res)
         if (res.status === 401) {
             return 401
         }

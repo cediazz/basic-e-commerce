@@ -55,3 +55,10 @@ class OrderUpdateStatus(BaseModel):
     
 class OrderCreateResponse(BaseModel):
     id:int
+
+class OrderPaymentRequestSchema(BaseModel):
+    id:int
+    items: List[OrderItemListSchema]
+    customer_email: str
+    success_url: str
+    cancel_url: str

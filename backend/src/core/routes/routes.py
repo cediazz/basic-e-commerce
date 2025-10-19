@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 from ...auth.routes import fastapi_users
 from .product_routes import product_routers
 from .order_routes import order_routers
+from .stripe_routes import stripe_router
 
 core_routers = APIRouter(
     dependencies = [
@@ -10,3 +11,4 @@ core_routers = APIRouter(
 )
 core_routers.include_router(product_routers)
 core_routers.include_router(order_routers)
+core_routers.include_router(stripe_router)

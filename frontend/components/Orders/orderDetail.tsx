@@ -11,13 +11,13 @@ import {
   User,
   ArrowLeft,
   ShoppingCart,
-  DollarSign
+  DollarSign,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
-import { useAuth } from "@/context/userContext"
-import { formatDate } from "@/utils/formats"
-
+import { useAuth } from "@/context/userContext";
+import { formatDate } from "@/utils/formats";
+import { postData } from "@/utils/postData";
 
 export interface OrderItem {
   id: number;
@@ -53,23 +53,42 @@ interface OrderDetailsProps {
 }
 
 export function OrderDetails({ order }: OrderDetailsProps) {
-
-  const router = useRouter()
-  const { user } = useAuth()
+  const router = useRouter();
+  const { user } = useAuth();
 
   const getStatusVariant = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'pendiente':
-        return 'secondary';
-      case 'completado':
-        return 'default';
-      case 'cancelado':
-        return 'destructive';
-      case 'enviado':
-        return 'outline';
+      case "pendiente":
+        return "secondary";
+      case "completado":
+        return "default";
+      case "cancelado":
+        return "destructive";
+      case "enviado":
+        return "outline";
       default:
-        return 'secondary';
+        return "secondary";
     }
+  };
+
+  const handlePayment = async () => {
+    const paymentData = {
+      id:order.id,
+      items: order.items,
+      customer_email: user?.email,
+      success_url: `${window.location.origin}/orders/${order.id}`,
+      cancel_url: `${window.location.origin}`,
+    };
+    console.log(paymentData);
+    const data = await postData("/stripe/create-checkout-session", paymentData);
+    console.log(data);
+    if (data === 401 || data === undefined) {
+      router.push("/login");
+    }
+   /* else {
+      // 3. Redirigir a Stripe Checkout
+      window.location.href = data.url;
+    }*/
   };
 
   return (
@@ -107,14 +126,18 @@ export function OrderDetails({ order }: OrderDetailsProps) {
                       <p className="text-sm text-muted-foreground flex items-center gap-1">
                         <Calendar className="h-3 w-3" /> Fecha
                       </p>
-                      <p className="font-medium">{formatDate(order.order_date)}</p>
+                      <p className="font-medium">
+                        {formatDate(order.order_date)}
+                      </p>
                     </div>
 
                     <div className="space-y-1">
                       <p className="text-sm text-muted-foreground flex items-center gap-1">
                         <CreditCard className="h-3 w-3" /> Pago
                       </p>
-                      <p className="font-medium capitalize">{order.payment_method?.toLowerCase()}</p>
+                      <p className="font-medium capitalize">
+                        {order.payment_method?.toLowerCase()}
+                      </p>
                     </div>
 
                     <div className="space-y-1">
@@ -136,15 +159,23 @@ export function OrderDetails({ order }: OrderDetailsProps) {
                 {/* Columna derecha - Información del cliente */}
                 <div className="space-y-3">
                   <div>
-                    <p className="text-sm font-medium text-muted-foreground mb-2">Información del Cliente</p>
+                    <p className="text-sm font-medium text-muted-foreground mb-2">
+                      Información del Cliente
+                    </p>
                     <div className="space-y-2">
                       <div>
-                        <p className="text-xs text-muted-foreground">Nombre completo</p>
-                        <p className="font-medium">{user?.fullname || 'No disponible'}</p>
+                        <p className="text-xs text-muted-foreground">
+                          Nombre completo
+                        </p>
+                        <p className="font-medium">
+                          {user?.fullname || "No disponible"}
+                        </p>
                       </div>
                       <div>
                         <p className="text-xs text-muted-foreground">Email</p>
-                        <p className="font-medium truncate">{user?.email || 'No disponible'}</p>
+                        <p className="font-medium truncate">
+                          {user?.email || "No disponible"}
+                        </p>
                       </div>
                     </div>
                   </div>
@@ -174,7 +205,10 @@ export function OrderDetails({ order }: OrderDetailsProps) {
             <CardContent>
               <div className="space-y-4">
                 {order.items.map((item) => (
-                  <div key={item.id} className="flex items-center gap-4 p-3 border rounded-lg">
+                  <div
+                    key={item.id}
+                    className="flex items-center gap-4 p-3 border rounded-lg"
+                  >
                     <div className="relative h-16 w-16 flex-shrink-0">
                       <Image
                         src={item.product.image_url}
@@ -185,7 +219,9 @@ export function OrderDetails({ order }: OrderDetailsProps) {
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-semibold truncate">{item.product.name}</h4>
+                      <h4 className="font-semibold truncate">
+                        {item.product.name}
+                      </h4>
                       <p className="text-sm text-muted-foreground">
                         {item.product.category}
                       </p>
@@ -241,8 +277,8 @@ export function OrderDetails({ order }: OrderDetailsProps) {
               <Button className="w-full" variant="outline" disabled>
                 Imprimir Factura
               </Button>
-              {order.status === 'pendiente' && (
-                <Button className="w-full">
+              {order.status === "pendiente" && (
+                <Button className="w-full" onClick={() => handlePayment()}>
                   Pagar
                 </Button>
               )}
@@ -264,15 +300,20 @@ export function OrderDetails({ order }: OrderDetailsProps) {
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Estado:</span>
-                <Badge variant={order.status === 'pendiente' ? 'secondary' : 'default'}>
+                <Badge
+                  variant={
+                    order.status === "pendiente" ? "secondary" : "default"
+                  }
+                >
                   {order.status}
                 </Badge>
               </div>
-              { order.status === 'pagado' &&
+              {order.status === "pagado" && (
                 <div className="flex justify-between">
-                <span className="text-muted-foreground">Fecha de pago:</span>
-                <span>{formatDate(order.order_date)}</span>
-              </div>}
+                  <span className="text-muted-foreground">Fecha de pago:</span>
+                  <span>{formatDate(order.order_date)}</span>
+                </div>
+              )}
             </CardContent>
           </Card>
         </div>
