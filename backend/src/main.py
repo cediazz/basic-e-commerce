@@ -6,6 +6,7 @@ from fastapi.openapi.utils import get_openapi
 from fastapi.staticfiles import StaticFiles
 from .config import MEDIA_ROOT
 from .core.routes.routes import core_routers
+from .core.routes.stripe_routes import webhook_router
 from fastapi.middleware.cors import CORSMiddleware
 from .config import origins
 
@@ -15,6 +16,7 @@ app = FastAPI(title='E-commerce API')
 app.include_router(users_routers)
 app.include_router(auth_routers)
 app.include_router(core_routers)
+app.include_router(webhook_router)
 
 app.add_middleware(
     CORSMiddleware,

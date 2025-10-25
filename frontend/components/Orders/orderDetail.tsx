@@ -18,6 +18,8 @@ import Image from "next/image";
 import { useAuth } from "@/context/userContext";
 import { formatDate } from "@/utils/formats";
 import { postData } from "@/utils/postData";
+import { useState } from "react"
+import { Loader2Icon } from "lucide-react"
 
 export interface OrderItem {
   id: number;
@@ -53,8 +55,10 @@ interface OrderDetailsProps {
 }
 
 export function OrderDetails({ order }: OrderDetailsProps) {
-  const router = useRouter();
-  const { user } = useAuth();
+  
+  const router = useRouter()
+  const { user } = useAuth()
+  const [loading, setLoading] = useState<boolean>(false)
 
   const getStatusVariant = (status: string) => {
     switch (status.toLowerCase()) {
@@ -72,6 +76,7 @@ export function OrderDetails({ order }: OrderDetailsProps) {
   };
 
   const handlePayment = async () => {
+    setLoading(true)
     const paymentData = {
       id:order.id,
       items: order.items,
@@ -85,10 +90,11 @@ export function OrderDetails({ order }: OrderDetailsProps) {
     if (data === 401 || data === undefined) {
       router.push("/login");
     }
-   /* else {
+    else {
       // 3. Redirigir a Stripe Checkout
-      window.location.href = data.url;
-    }*/
+      window.open(data.url, '_blank', 'noopener,noreferrer')
+    }
+    setLoading(false)
   };
 
   return (
@@ -279,6 +285,7 @@ export function OrderDetails({ order }: OrderDetailsProps) {
               </Button>
               {order.status === "pendiente" && (
                 <Button className="w-full" onClick={() => handlePayment()}>
+                  {loading && <Loader2Icon className="animate-spin" />}
                   Pagar
                 </Button>
               )}
