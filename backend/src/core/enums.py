@@ -9,10 +9,5 @@ class OrderStatus(str, Enum):
     CANCELLED = "cancelado"
 
 class PaymentMethod(str, Enum):
-    CREDIT_CARD = "Tarjeta de crédito"     
-    DEBIT_CARD = "Tarjeta de débito"        
-    PAYPAL = "PayPal"               
-    BANK_TRANSFER = "Transferencia bancaria" 
-    CASH = "Efectivo"                   
-    CRYPTO = "Criptomonedas"               
-    OTHER = "Otro método"                 
+    CREDIT_CARD = "Tarjeta de crédito"
+    CASH = "Efectivo"                 

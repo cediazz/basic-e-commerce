@@ -283,7 +283,8 @@ export function OrderDetails({ order }: OrderDetailsProps) {
               <Button className="w-full" variant="outline" disabled>
                 Imprimir Factura
               </Button>
-              {order.status === "pendiente" && (
+              {order.status === "pendiente" && order.payment_method === "Tarjeta de crédito" && 
+              (
                 <Button className="w-full" onClick={() => handlePayment()}>
                   {loading && <Loader2Icon className="animate-spin" />}
                   Pagar

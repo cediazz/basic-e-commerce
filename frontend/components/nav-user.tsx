@@ -64,11 +64,11 @@ export function NavUser( { user }: { user: User | null } ) {
             <DropdownMenuGroup>
               <DropdownMenuItem>
                 <BadgeCheck />
-                Account
+                Cuenta(pendiente de desarrollo)
               </DropdownMenuItem>
               <DropdownMenuItem>
                 <Bell />
-                Notifications
+                Notificaciones(pendiente de desarrollo)
               </DropdownMenuItem>
             </DropdownMenuGroup>
             <DropdownMenuSeparator />
