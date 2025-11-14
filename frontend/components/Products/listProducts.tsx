@@ -8,21 +8,23 @@ import { MyPagination } from "../Pagination/Pagination";
 import { getData } from "@/utils/getData";
 import { deleteData } from "@/utils/deleteData";
 
+export interface Product {
+  id: number;
+  name: string;
+  description: string;
+  price: string;
+  is_active: boolean;
+  category: string;
+  image_url: string;
+  created_at: string;
+}
+
 interface ProductsProps {
   data: {
     count: number;
     next: string;
     previous: string;
-    results: Array<{
-      id: number,
-      name: string,
-      description: string,
-      price: string,
-      is_active: boolean,
-      category: string,
-      image_url: string,
-      created_at: string,
-    }>;
+    results: Array<Product>;
   };
 }
 
@@ -86,7 +88,7 @@ export default function Products({ data }: ProductsProps) {
           </div>
           <div className="grid grid-cols-1  lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-8">
             {productsData && productsData.results.length > 0 ? (
-              productsData.results.map((product: any) => (
+              productsData.results.map((product: Product) => (
                 <ProductCard
                   key={product.id}
                   product={product}

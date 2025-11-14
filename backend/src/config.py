@@ -30,7 +30,7 @@ origins = [
 ]
 
 #***Database configurations***
-DATABASE_URL = "sqlite+aiosqlite:///./db.sqlite3"
+DATABASE_URL = 'sqlite+aiosqlite:///./db.sqlite3'
 
 engine = create_async_engine(DATABASE_URL,connect_args={"check_same_thread": False})
 async_session_maker = async_sessionmaker(engine, expire_on_commit=False)

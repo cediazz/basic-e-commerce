@@ -16,23 +16,9 @@ import { useCart } from "@/context/cartContext";
 import { toast } from "sonner";
 import { AlertDialogDelete } from "../Alerts/alertDialog";
 import { useAuth } from "@/context/userContext";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip"
-import { SquarePen } from "lucide-react";
+import {Product} from "./listProducts"
 
-export interface Product {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  image_url: string;
-  category: string;
-  is_active: boolean;
-  created_at: string;
-}
+
 
 interface ProductCardProps {
   product: Product;

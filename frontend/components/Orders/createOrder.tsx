@@ -20,10 +20,9 @@ import {
     SelectTrigger,
     SelectValue,
 } from "@/components/ui/select";
-import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Trash2, ShoppingCart } from "lucide-react";
+import { ShoppingCart } from "lucide-react";
 import { z } from "zod"
 import { useCart } from "@/context/cartContext";
 import Link from "next/link";

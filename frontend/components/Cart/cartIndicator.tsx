@@ -13,7 +13,7 @@ import {
 import { CartItems } from './cartItems'
 
 export function CartIndicator() {
-  const { itemCount, total, items } = useCart()
+  const { itemCount, items } = useCart()
 
   return (
     <Sheet>

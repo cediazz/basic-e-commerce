@@ -1,0 +1,47 @@
+#pendiente de probar
+version: '3.3'
+
+services:
+  backend:
+    build: 
+      context: ./backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/src/db.sqlite3:/app/src/db.sqlite3
+      - ./backend/src/media/products:/app/src/media/products
+      - ./backend:/app
+    env_file:
+      - ./backend/.env
+    environment:
+      - ENVIRONMENT=development
+      - SECRET_KEY=${SECRET_KEY}
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - STRIPE_WEBHOOK_SECRET_DEV=${STRIPE_WEBHOOK_SECRET_DEV}
+      - STRIPE_PUBLISHABLE_KEY=${STRIPE_PUBLISHABLE_KEY}
+      - DATABASE_URL=sqlite+aiosqlite:///./src/db.sqlite3
+      - FRONTEND_HOST=http://localhost:3000
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    environment:
+      - NEXT_PUBLIC_BACKEND_HOST=http://localhost:8000
+    depends_on:
+      - backend
+
+  stripe-cli:
+    image: stripe/stripe-cli:latest
+    command: listen --forward-to http://backend:8000/stripe/webhook --skip-verify
+    environment:
+      - STRIPE_API_KEY=${STRIPE_SECRET_KEY}
+    depends_on:
+      - backend

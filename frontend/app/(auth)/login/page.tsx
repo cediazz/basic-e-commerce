@@ -21,7 +21,6 @@ import axios from "axios"
 import MyAlert from "@/components/Alerts/alert"
 import Link from 'next/link'
 import { useAuth } from "@/context/userContext"
-import { redirect } from 'next/navigation'
 import { useRouter } from 'next/navigation'
 
 const FormSchema = z.object({
@@ -45,7 +44,7 @@ export default function LoginPage() {
   
   async function onSubmit(data: z.infer<typeof FormSchema>) {
     setLoading(true)
-    let formData = new FormData()
+    const formData = new FormData()
     formData.append('email', data.email)
     formData.append('password', data.password)
     axios.post(`${process.env.NEXT_PUBLIC_BACKEND_HOST}/auth/login`, formData)

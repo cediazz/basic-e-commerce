@@ -1,4 +1,4 @@
-import { AlertCircleIcon, CheckCircle2Icon, PopcornIcon } from "lucide-react"
+import { AlertCircleIcon } from "lucide-react"
 
 import {
   Alert,
@@ -6,7 +6,7 @@ import {
   AlertTitle,
 } from "@/components/ui/alert"
 
-export default function MyAlert({message}){
+export default function MyAlert({message}: {message: string}) {
 
     return(
        <Alert variant="destructive">
