@@ -13,7 +13,7 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'basic-e-commerce-api.onrender.com',
-        port: '8000',
+        port: '',
         pathname: '/media/products/**',
         search: '',
       },
