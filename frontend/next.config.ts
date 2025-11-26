@@ -10,6 +10,13 @@ const nextConfig: NextConfig = {
         pathname: '/media/products/**',
         search: '',
       },
+      {
+        protocol: 'https',
+        hostname: 'basic-e-commerce-api.onrender.com',
+        port: '8000',
+        pathname: '/media/products/**',
+        search: '',
+      },
     ],
   },
   eslint: {
