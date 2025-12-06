@@ -20,7 +20,7 @@ app.include_router(webhook_router)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"], #probar permitiendo todo para que stripe funcione bien
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
