@@ -23,6 +23,7 @@ async def webhook_received(
     order_service: OrderService = Depends(OrderService),
     session: AsyncSession = Depends(get_async_session)
 ):
+    print("🎯 webhook recibido en la ruta")
     payload = await request.body()
     sig_header = request.headers.get('stripe-signature')
     
