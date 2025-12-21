@@ -56,25 +56,21 @@ class StripeService:
                 detail=f"Error creating Stripe session: {str(e)}"
             )
     
-    async def handle_webhook(self, payload: bytes, sig_header: str,order_service: OrderService, session:AsyncSession) -> Dict[str, Any]:
+    async def handle_webhook(self, payload: bytes, sig_header: str, order_service: OrderService, session: AsyncSession) -> Dict[str, Any]:
         try:
-            print("🎯 Webhook recibido")
+            # 1. Verifica la firma de Stripe INMEDIATAMENTE
+            event = stripe.Webhook.construct_event(payload, sig_header, STRIPE_WEBHOOK_SECRET)
             
-            event = stripe.Webhook.construct_event(
-                payload, sig_header, STRIPE_WEBHOOK_SECRET
-            )
-            print(f"📧 Event type: {event['type'] if 'event' in locals() else 'Unknown'}")
             if event['type'] == 'checkout.session.completed':
                 event_session = event['data']['object']
-                await self.handle_successful_payment(event_session,order_service, session)
-                
-            return {'status': 'success', 'event': event['type']}
-            
+                from fastapi import BackgroundTasks
+                background_tasks = BackgroundTasks()
+                background_tasks.add_task(self.handle_successful_payment, event_session, order_service, session)
+                return {'status': 'success', 'event': event['type']}
         except Exception as e:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=f"Invalid payload: {str(e)}"
-            )
+            raise HTTPException(status_code=400, detail=f"Invalid payload: {str(e)}")
+        
+        return {'status': 'success', 'event': event['type']}
     
     async def handle_successful_payment(self, event_session: Dict[str, Any],order_service: OrderService,session:AsyncSession):
         order_id = int(event_session['metadata']['order_id'])
