@@ -13,14 +13,15 @@ from .config import origins
 app = FastAPI(title='E-commerce API')
 
 #add routes
+app.include_router(webhook_router)
 app.include_router(users_routers)
 app.include_router(auth_routers)
 app.include_router(core_routers)
-app.include_router(webhook_router)
+
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], #probar permitiendo todo para que stripe funcione bien
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
