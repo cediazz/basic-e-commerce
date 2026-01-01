@@ -72,6 +72,41 @@ class StripeService:
         
         return {'status': 'success', 'event': event['type']}
     
+    async def check_payment(self, 
+                            session_id:str, 
+                            order_service: OrderService, 
+                            session: AsyncSession
+    ) -> Dict[str, Any]:
+        """Verificar estado de pago directamente con Stripe"""
+        try:
+            # 1. Obtener sesión de Stripe
+            stripe_session = stripe.checkout.Session.retrieve(session_id)
+            # 2. Verificar estado
+            if stripe_session.payment_status == 'paid':
+                order_id = int(stripe_session.metadata.get('order_id'))
+                # 3. Actualizar orden
+                await order_service.update_order_status(
+                    order_id, 
+                    OrderUpdateStatus(status=OrderStatus.PAID),
+                    session
+                )
+                return {
+                    "status": "pagado",
+                    "order_id": order_id,
+                    "session_id": session_id
+                }
+            elif stripe_session.payment_status == 'unpaid':
+                return {"status": "pendiente", "session_id": session_id}
+            else:
+                return {"status": stripe_session.payment_status, "session_id": session_id}
+            
+        except stripe.error.StripeError as e:
+            raise HTTPException(status_code=400, detail=f"Stripe error: {str(e)}")
+        except Exception as e:
+            raise HTTPException(status_code=500, detail=str(e))
+        
+        
+    
     async def handle_successful_payment(self, event_session: Dict[str, Any],order_service: OrderService,session:AsyncSession):
         order_id = int(event_session['metadata']['order_id'])
         await order_service.update_order_status(

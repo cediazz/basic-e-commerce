@@ -14,6 +14,15 @@ async def create_checkout_session(
 ):
     return await stripe_service.create_checkout_session(order_data)
 
+@stripe_router.get("/check-payment/{session_id}")
+async def check_payment_status(
+    session_id: str,
+    stripe_service: StripeService = Depends(StripeService),
+    order_service: OrderService = Depends(OrderService),
+    session: AsyncSession = Depends(get_async_session)
+):
+    return await stripe_service.check_payment(session_id,order_service,session)
+
 webhook_router = APIRouter(prefix="/stripe/webhook", tags=["stripe"])
 
 @webhook_router.post("/")
