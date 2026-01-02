@@ -18,10 +18,9 @@ import Image from "next/image";
 import { useAuth } from "@/context/userContext";
 import { formatDate } from "@/utils/formats";
 import { postData } from "@/utils/postData";
-import { getData } from "@/utils/getData";
 import { useState } from "react";
 import { Loader2Icon } from "lucide-react";
-import { toast } from "sonner";
+import { setCookie } from "cookies-next/client";
 
 export interface OrderItem {
   id: number;
@@ -60,15 +59,13 @@ export function OrderDetails({ order }: OrderDetailsProps) {
   const router = useRouter();
   const { user } = useAuth();
   const [loading, setLoading] = useState<boolean>(false);
-  const [paymentSession, setPaymentSession] = useState<string | null>();
-  const [orderStatus, setOrderStatus] = useState<string | null>(order.status);
 
   const getStatusVariant = (status: string) => {
     switch (status.toLowerCase()) {
       case "pendiente":
         return "secondary";
-      case "completado":
-        return "default";
+      case "pagado":
+        return "secondary";
       case "cancelado":
         return "destructive";
       case "enviado":
@@ -84,7 +81,7 @@ export function OrderDetails({ order }: OrderDetailsProps) {
       id: order.id,
       items: order.items,
       customer_email: user?.email,
-      success_url: `${window.location.origin}/orders/${order.id}`,
+      success_url: `${window.location.origin}/orders/success_payment`,
       cancel_url: `${window.location.origin}`,
     };
     const data = await postData("/stripe/create-checkout-session", paymentData);
@@ -92,43 +89,12 @@ export function OrderDetails({ order }: OrderDetailsProps) {
     if (data === 401 || data === undefined) {
       router.push("/login");
     } else {
-      setPaymentSession(data.session_id);
+      setCookie(
+        "paymentData",
+        JSON.stringify({ sessionId: data.session_id, orderID: order.id })
+      );
       // 3. Redirigir a Stripe Checkout
       window.open(data.url, "_blank", "noopener,noreferrer");
-    }
-    setLoading(false);
-  };
-
-  const updatePayment = async () => {
-    setLoading(true);
-    const data = await getData(`/stripe/check-payment/${paymentSession}`);
-    if (data === 401 || data === undefined) {
-      router.push("/login");
-    } else {
-      if (data.status === "pendiente") {
-        toast(
-          `El pago aún está pendiente. Por favor, complete el pago en Stripe.`,
-          {
-            action: {
-              label: "Cerrar",
-              onClick: () => console.log("Undo"),
-            },
-            position: "top-center",
-            duration: 8000,
-          }
-        );
-      }
-      if (data.status === "pagado") {
-        setOrderStatus("pagado");
-        toast(`El pago se realizó correctamente y se actualizó la orden.`, {
-          action: {
-            label: "Cerrar",
-            onClick: () => console.log("Undo"),
-          },
-          position: "top-center",
-          duration: 8000,
-        });
-      }
     }
     setLoading(false);
   };
@@ -191,8 +157,13 @@ export function OrderDetails({ order }: OrderDetailsProps) {
 
                     <div className="space-y-1">
                       <p className="text-sm text-muted-foreground">Estado</p>
-                      <Badge variant={getStatusVariant(orderStatus)}>
-                        {orderStatus}
+                      <Badge 
+                      variant={getStatusVariant(order.status)}
+                      className={`
+                ${order.status === "pagado" ? "bg-green-500 text-white-800 dark:bg-green-600" : ""}
+              `}
+                      >
+                        {order.status}
                       </Badge>
                     </div>
                   </div>
@@ -319,19 +290,13 @@ export function OrderDetails({ order }: OrderDetailsProps) {
               <Button className="w-full" variant="outline" disabled>
                 Imprimir Factura
               </Button>
-              {orderStatus === "pendiente" &&
+              {order.status === "pendiente" &&
                 order.payment_method === "Tarjeta de crédito" && (
                   <Button className="w-full" onClick={() => handlePayment()}>
                     {loading && <Loader2Icon className="animate-spin" />}
                     Pagar
                   </Button>
                 )}
-              {paymentSession && (
-                <Button onClick={() => updatePayment()} className="w-full">
-                  {loading && <Loader2Icon className="animate-spin" />}
-                  Actualizar pago
-                </Button>
-              )}
             </CardContent>
           </Card>
 
@@ -352,13 +317,16 @@ export function OrderDetails({ order }: OrderDetailsProps) {
                 <span className="text-muted-foreground">Estado:</span>
                 <Badge
                   variant={
-                    orderStatus === "pendiente" ? "secondary" : "default"
+                    order.status === "pendiente" ? "secondary" : "default"
                   }
+                  className={`
+                ${order.status === "pagado" ? "bg-green-500 text-white-800 dark:bg-green-600" : ""}
+              `}
                 >
-                  {orderStatus}
+                  {order.status}
                 </Badge>
               </div>
-              {orderStatus === "pagado" && (
+              {order.status === "pagado" && (
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Fecha de pago:</span>
                   <span>{formatDate(order.order_date)}</span>

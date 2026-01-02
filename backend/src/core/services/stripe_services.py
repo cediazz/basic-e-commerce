@@ -56,6 +56,8 @@ class StripeService:
                 detail=f"Error creating Stripe session: {str(e)}"
             )
     
+    """
+    No funciona bien el manejo de webhooks con Stripe al desplegar en render.com
     async def handle_webhook(self, payload: bytes, sig_header: str, order_service: OrderService, session: AsyncSession) -> Dict[str, Any]:
         try:
             # 1. Verifica la firma de Stripe INMEDIATAMENTE
@@ -70,7 +72,7 @@ class StripeService:
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Invalid payload: {str(e)}")
         
-        return {'status': 'success', 'event': event['type']}
+        return {'status': 'success', 'event': event['type']}"""
     
     async def check_payment(self, 
                             session_id:str, 
